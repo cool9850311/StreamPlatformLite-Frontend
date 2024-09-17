@@ -34,8 +34,6 @@ const streamDescription = ref('This is a description of the stream.');
 const viewCount = ref(143); // Example view count
 const messages = ref([]);
 
-
-
 onMounted(async () => {
   try {
     // Retrieve token from localStorage
@@ -93,12 +91,17 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  background-color: #f0f2f5;
+  font-family: 'Arial', sans-serif;
 }
 
 .stream-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: #fff;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
 }
 
 .user-icon {
@@ -114,27 +117,39 @@ onMounted(async () => {
 
 .view-count {
   margin-left: 10px;
+  font-size: 0.9em;
+  color: #666;
 }
 
 .stream-content {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  padding: 20px;
 }
 
 .stream-video {
   flex: 5; /* 70% height */
   padding: 10px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .stream-video video {
   width: 100%;
   height: auto;
+  border-radius: 10px;
 }
 
 .chatroom {
+  flex: 2; /* 30% height */
   padding: 10px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
+  margin-top: 0; /* Remove margin to connect with stream-video */
 }
 
 .chatroom ul {
@@ -144,7 +159,7 @@ onMounted(async () => {
 
 .chatroom li {
   margin-bottom: 10px;
-  background-color: #f1f1f1;
+  background-color: #e9ecef;
   padding: 10px;
   border-radius: 5px;
 }
@@ -170,10 +185,16 @@ onMounted(async () => {
 
   .stream-video {
     flex: 5; /* 70% width */
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
   }
 
   .chatroom {
-    flex: 2; /* 20% width */
+    flex: 2; /* 30% width */
+    margin-top: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 10px;
   }
 }
 
@@ -185,12 +206,16 @@ onMounted(async () => {
   .stream-video {
     flex: 4; /* 70% height */
     padding-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
   }
 
   .chatroom {
     flex: 6; /* 30% height */
     margin-top: 0;
     padding-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
   }
 
   .stream-details {
