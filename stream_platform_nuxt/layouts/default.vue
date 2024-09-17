@@ -26,7 +26,7 @@
                 <a href="/system-settings" class="dropdown-item">System Settings</a>
               </MenuItem>
               <MenuItem v-if="isAdmin">
-                <a href="/start-streaming" class="dropdown-item">Start Streaming</a>
+                <a href="/manage-livestream" class="dropdown-item">Manage Livestreams</a>
               </MenuItem>
               <MenuItem>
                 <a href="#" @click="logout" class="dropdown-item">Logout</a>
