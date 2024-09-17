@@ -19,13 +19,17 @@
           >
             <MenuItems class="dropdown-menu">
               <MenuItem>
-                <a href="#" @click="logout" class="dropdown-item">Logout</a>
+                <a href="/stream" class="dropdown-item">Stream</a>
               </MenuItem>
+  
               <MenuItem v-if="isAdmin">
                 <a href="/system-settings" class="dropdown-item">System Settings</a>
               </MenuItem>
               <MenuItem v-if="isAdmin">
                 <a href="/start-streaming" class="dropdown-item">Start Streaming</a>
+              </MenuItem>
+              <MenuItem>
+                <a href="#" @click="logout" class="dropdown-item">Logout</a>
               </MenuItem>
             </MenuItems>
           </transition>
