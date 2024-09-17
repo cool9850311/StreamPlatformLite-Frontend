@@ -3,16 +3,33 @@
     <header class="main-header">
       <nav>
         <ul>
-          
+          <!-- Other navigation items -->
         </ul>
-        <div class="dropdown">
-          <button @click="toggleDropdown" class="dropdown-button">
+        <Menu as="div" class="relative">
+          <MenuButton class="dropdown-button">
             <p class="icon">☰</p>
-          </button>
-          <ul v-if="dropdownVisible" class="dropdown-menu">
-            <li><a href="#" @click="logout">Logout</a></li>
-          </ul>
-        </div>
+          </MenuButton>
+          <transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
+          >
+            <MenuItems class="dropdown-menu">
+              <MenuItem>
+                <a href="#" @click="logout" class="dropdown-item">Logout</a>
+              </MenuItem>
+              <MenuItem v-if="isAdmin">
+                <a href="/system-settings" class="dropdown-item">System Settings</a>
+              </MenuItem>
+              <MenuItem v-if="isAdmin">
+                <a href="/start-streaming" class="dropdown-item">Start Streaming</a>
+              </MenuItem>
+            </MenuItems>
+          </transition>
+        </Menu>
       </nav>
     </header>
     <NuxtPage />
@@ -20,24 +37,41 @@
 </template>
 
 <script>
+import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
+
 export default {
+  components: {
+    Menu,
+    MenuButton,
+    MenuItems,
+    MenuItem
+  },
   data() {
     return {
-      dropdownVisible: false
+      isAdmin: false
     };
   },
   mounted() {
-    if (!localStorage.getItem('token')) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       this.$router.push('/');
+      return;
     }
+    const decodedToken = this.decodeJWT(token);
+    this.isAdmin = decodedToken.Role === 0;
   },
   methods: {
-    toggleDropdown() {
-      this.dropdownVisible = !this.dropdownVisible;
-    },
     logout() {
-      localStorage.removeItem('token'); // Remove the token from localStorage
+      localStorage.removeItem('token');
       window.location.href = '/';
+    },
+    decodeJWT(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
     }
   }
 };
@@ -78,10 +112,6 @@ nav ul li a:hover {
   text-decoration: underline;
 }
 
-.dropdown {
-  position: relative;
-}
-
 .dropdown-button {
   background: none;
   border: none;
@@ -93,23 +123,35 @@ nav ul li a:hover {
 .dropdown-menu {
   position: absolute;
   right: 0;
-  background-color: #333;
+  background-color: #444;
   list-style: none;
   padding: 10px;
   margin: 0;
-  border: 1px solid #444;
+  border: 1px solid #555;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000; /* Ensure the dropdown is above other elements */
 }
 
-.dropdown-menu li {
-  margin: 5px 0;
-}
-
-.dropdown-menu li a {
+.dropdown-item {
   color: white;
+  padding: 8px 12px;
   text-decoration: none;
+  border-radius: 3px;
+  transition: background-color 0.2s;
 }
 
-.dropdown-menu li a:hover {
-  text-decoration: underline;
+.dropdown-item:hover {
+  background-color: #555;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .dropdown-menu {
+    right: 10px; /* Adjust position for smaller screens */
+    width: 90vw; /* Make the dropdown wider on small screens */
+  }
 }
 </style>
