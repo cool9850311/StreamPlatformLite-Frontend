@@ -123,7 +123,7 @@ onMounted(async () => {
 }
 
 .stream-video {
-  flex: 5; /* 70% width */
+  flex: 5; /* 70% height */
   padding: 10px;
 }
 
@@ -133,7 +133,6 @@ onMounted(async () => {
 }
 
 .chatroom {
-  flex: 2; /* 20% width */
   padding: 10px;
   overflow-y: auto;
 }
@@ -175,6 +174,27 @@ onMounted(async () => {
 
   .chatroom {
     flex: 2; /* 20% width */
+  }
+}
+
+@media (max-width: 767px) {
+  .stream-content {
+    flex-direction: column;
+  }
+
+  .stream-video {
+    flex: 4; /* 70% height */
+    padding-bottom: 0;
+  }
+
+  .chatroom {
+    flex: 6; /* 30% height */
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .stream-details {
+    margin-bottom: 0;
   }
 }
 </style>
