@@ -17,7 +17,7 @@
         <!-- Dynamic chatroom -->
         <div class="messages">
           <ul>
-            <li v-for="message in messages" :key="message.id">
+            <li v-for="message in messages" :key="message.id" @click="showOptions(message, $event)">
               <div class="username">{{ message.username }}</div>
               <div class="message">{{ message.message }}</div>
             </li>
@@ -30,6 +30,11 @@
         </div>
       </div>
     </main>
+    <!-- Context menu for message options -->
+    <div v-if="showContextMenu" class="context-menu" :style="{ top: contextMenuY + 'px', left: contextMenuX + 'px' }">
+      <button @click="deleteMessage(selectedMessage)">Delete</button>
+      <button @click="muteUser(selectedMessage.username)">Mute</button>
+    </div>
   </div>
 </template>
 
@@ -47,6 +52,10 @@ const messages = ref([]);
 const lastMessageId = ref('-1');
 const newMessage = ref('');
 const chatroom = ref(null);
+const showContextMenu = ref(false);
+const contextMenuX = ref(0);
+const contextMenuY = ref(0);
+const selectedMessage = ref(null);
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -79,10 +88,78 @@ const sendMessage = async () => {
   }
 };
 
+const decodeJWT = (token) => {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+  return JSON.parse(jsonPayload);
+};
+
+const showOptions = (message, event) => {
+  const token = localStorage.getItem('token');
+  const decodedToken = decodeJWT(token); // Use decodeJWT to parse the token
+  if (decodedToken && decodedToken.Role <= 2) {
+    selectedMessage.value = message;
+    contextMenuX.value = event.clientX;
+    contextMenuY.value = event.clientY;
+    showContextMenu.value = true;
+  }
+};
+
+const deleteMessage = async (message) => {
+  try {
+    const token = localStorage.getItem('token');
+    const runtimeConfig = useRuntimeConfig();
+    const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+    await axios.delete(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${message.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    messages.value = messages.value.filter(m => m.id !== message.id);
+    showContextMenu.value = false;
+  } catch (error) {
+    console.error('Error deleting message:', error);
+  }
+};
+
+const muteUser = (username) => {
+  // Implement mute functionality here
+  console.log(`Muting user: ${username}`);
+  showContextMenu.value = false;
+};
+
+// Function to poll for deleted messages
+const pollDeletedMessages = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const runtimeConfig = useRuntimeConfig();
+    const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+    const response = await axios.get(`${backendUrl}/livestream/chat/delete/${streamData.value.uuid}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const deletedMessageIds = response.data;
+    if (deletedMessageIds.length > 0) {
+      messages.value = messages.value.filter(message => !deletedMessageIds.includes(message.id));
+    }
+  } catch (error) {
+    console.error('Error fetching deleted messages:', error);
+  }
+};
+
 onMounted(async () => {
   try {
     // Retrieve token from localStorage
     const token = localStorage.getItem('token');
+    const decodedToken = decodeJWT(token); // Use decodeJWT to parse the token
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
 
@@ -148,6 +225,10 @@ onMounted(async () => {
     // Poll for new messages every half second
     setInterval(fetchMessages, 500);
     fetchMessages();
+
+    // Poll for deleted messages every 2 seconds
+    setInterval(pollDeletedMessages, 2000);
+    pollDeletedMessages();
   } catch (error) {
     if (error.response && error.response.status === 401) {
       // Redirect to notAllowed page
@@ -328,5 +409,27 @@ onMounted(async () => {
   .stream-details {
     margin-bottom: 0;
   }
+}
+
+.context-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.context-menu button:hover {
+  background-color: #f0f0f0;
 }
 </style>
