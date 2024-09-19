@@ -31,7 +31,7 @@ import axios from 'axios';
 const userIcon = ref('path_to_user_icon');
 const streamTitle = ref('Stream Title');
 const streamDescription = ref('This is a description of the stream.');
-const viewCount = ref(143); // Example view count
+const viewCount = ref(0);
 const messages = ref([]);
 
 onMounted(async () => {
@@ -61,6 +61,25 @@ onMounted(async () => {
         video.play();
       });
     }
+
+    // Function to ping viewer count
+    const pingViewerCount = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${backendUrl}/livestream/ping-viewer-count/${streamData.uuid}`,{
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        viewCount.value = response.data.viewer_count;
+      } catch (error) {``
+        console.error('Error pinging viewer count:', error);
+      }
+    };
+
+    // Poll for viewer count every 5 seconds
+    setInterval(pingViewerCount, 5000);
+    pingViewerCount();
 
     // Fetch chat messages
     const fetchMessages = async () => {
