@@ -24,11 +24,11 @@
       </div>
       <div class="form-group">
         <label for="banList">Ban List:</label>
-        <textarea v-model="livestream.banList" id="banList" class="form-control" :disabled=true></textarea>
+        <textarea v-model="banListString" id="banList" class="form-control" :disabled=true></textarea>
       </div>
       <div class="form-group">
         <label for="muteList">Mute List:</label>
-        <textarea v-model="livestream.muteList" id="muteList" class="form-control" :disabled=true></textarea>
+        <textarea v-model="muteListString" id="muteList" class="form-control" :disabled=true></textarea>
       </div>
       <button v-if="!isLivestreamExist" type="submit" class="btn btn-primary">Create</button>
       <button v-if="isLivestreamExist" type="button" @click="deleteLivestream" class="btn btn-danger">Delete</button>
@@ -54,6 +54,8 @@ export default {
         banList: [],
         muteList: []
       },
+      banListString: '',
+      muteListString: '',
       hasAccess: false,
       isLivestreamExist: false
     };
@@ -94,6 +96,8 @@ export default {
         if (response.ok) {
           const data = await response.json();
           this.livestream = data;
+          this.banListString = data.ban_list.join('\n');
+          this.muteListString = data.mute_list.join('\n');
           this.isLivestreamExist = true;
         } else {
           console.error('Failed to fetch livestream data');
