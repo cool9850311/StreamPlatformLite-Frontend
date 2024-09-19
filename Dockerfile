@@ -6,16 +6,16 @@ WORKDIR /app
 
 # Copy package.json and package-lock.json
 COPY . .
-
+WORKDIR /app/stream_platform_nuxt
 # Install dependencies
-RUN cd stream_platform_nuxt && npm install
+RUN npm install
 
 
 # Build the application
-RUN cd stream_platform_nuxt && npm run build
+RUN npm run build
 
 # Expose the port the app runs on
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "stream_platform_nuxt/.output/server/index.mjs"]
+CMD ["node", ".output/server/index.mjs"]
