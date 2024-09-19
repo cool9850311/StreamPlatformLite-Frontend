@@ -13,43 +13,89 @@
           <p>{{ streamDescription }}</p>
         </div>
       </div>
-      <div class="chatroom">
+      <div class="chatroom" ref="chatroom">
         <!-- Dynamic chatroom -->
-        <ul>
-          <li v-for="message in messages" :key="message.id">{{ message.text }}</li>
-        </ul>
+        <div class="messages">
+          <ul>
+            <li v-for="message in messages" :key="message.id">
+              <div class="username">{{ message.username }}</div>
+              <div class="message">{{ message.message }}</div>
+            </li>
+          </ul>
+        </div>
+        <!-- Chat input and send button -->
+        <div class="chat-input">
+          <input v-model="newMessage" maxlength="100" placeholder="Type your message..." @keyup.enter="sendMessage" />
+          <button @click="sendMessage">Send</button>
+        </div>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
 import Hls from 'hls.js';
 import axios from 'axios';
 
-const userIcon = ref('path_to_user_icon');
+// Reactive variables
+const streamData = ref({});
 const streamTitle = ref('Stream Title');
 const streamDescription = ref('This is a description of the stream.');
 const viewCount = ref(0);
 const messages = ref([]);
+const lastMessageId = ref('-1');
+const newMessage = ref('');
+const chatroom = ref(null);
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    const messagesContainer = chatroom.value.querySelector('.messages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  });
+};
+
+const sendMessage = async () => {
+  if (newMessage.value.trim() === '') return;
+
+  try {
+    const token = localStorage.getItem('token');
+    const runtimeConfig = useRuntimeConfig();
+    const backendUrl = runtimeConfig.public.BACKEND_URL;
+    const streamUUID = streamData.value.uuid;
+
+    await axios.post(`${backendUrl}/livestream/chat`, {
+      stream_uuid: streamUUID,
+      message: newMessage.value
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    newMessage.value = ''; // Clear the input after sending
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
+};
 
 onMounted(async () => {
   try {
     // Retrieve token from localStorage
     const token = localStorage.getItem('token');
-    const runtimeConfig = useRuntimeConfig()
+    const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
+
     // Fetch stream details with Bearer token
     const response = await axios.get(`${backendUrl}/livestream/one`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
-    const streamData = response.data;
-    streamTitle.value = streamData.title;
-    streamDescription.value = streamData.information;
-    const streamURL = streamData.streamURL;
+    streamData.value = response.data;
+    streamTitle.value = streamData.value.title;
+    streamDescription.value = streamData.value.information;
+    const streamURL = streamData.value.streamURL;
 
     // Initialize HLS.js
     const video = document.getElementById('video');
@@ -65,14 +111,13 @@ onMounted(async () => {
     // Function to ping viewer count
     const pingViewerCount = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${backendUrl}/livestream/ping-viewer-count/${streamData.uuid}`,{
+        const response = await axios.get(`${backendUrl}/livestream/ping-viewer-count/${streamData.value.uuid}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
         viewCount.value = response.data.viewer_count;
-      } catch (error) {``
+      } catch (error) {
         console.error('Error pinging viewer count:', error);
       }
     };
@@ -84,15 +129,24 @@ onMounted(async () => {
     // Fetch chat messages
     const fetchMessages = async () => {
       try {
-        // const response = await axios.get('https://api.yourdomain.com/chat/messages');
-        messages.value = [{text: 'Hello World'}, {text: 'Hello World'}, {text: 'Hello World'}];
+        const response = await axios.get(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${lastMessageId.value}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const newMessages = response.data;
+        if (newMessages.length > 0) {
+          messages.value.push(...newMessages);
+          lastMessageId.value = newMessages[newMessages.length - 1].id;
+          scrollToBottom();
+        }
       } catch (error) {
         console.error('Error fetching messages:', error);
       }
     };
 
-    // Poll for new messages every 5 seconds
-    setInterval(fetchMessages, 5000);
+    // Poll for new messages every half second
+    setInterval(fetchMessages, 500);
     fetchMessages();
   } catch (error) {
     if (error.response && error.response.status === 401) {
@@ -145,6 +199,7 @@ onMounted(async () => {
   flex-direction: column;
   flex-grow: 1;
   padding: 20px;
+  overflow: hidden; /* Prevent content from overflowing */
 }
 
 .stream-video {
@@ -162,18 +217,27 @@ onMounted(async () => {
 }
 
 .chatroom {
+  display: flex;
+  flex-direction: column;
   flex: 2; /* 30% height */
   padding: 10px;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
   margin-top: 0; /* Remove margin to connect with stream-video */
+  overflow: hidden; /* Prevent content from overflowing */
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 80%; /* 80% of the chatroom height */
 }
 
 .chatroom ul {
   list-style-type: none;
   padding: 0;
+  margin: 0; /* Ensure no extra margin */
 }
 
 .chatroom li {
@@ -183,18 +247,42 @@ onMounted(async () => {
   border-radius: 5px;
 }
 
-.stream-details {
+.username {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.message {
+  word-wrap: break-word;
+  flex: 1;
+  overflow-y: scroll;
+}
+
+.chat-input {
+  display: flex;
   margin-top: 10px;
-  color: #333;
+  flex-shrink: 0;
+  max-height: 20%; /* 20% of the chatroom height */
 }
 
-.stream-header h2 {
-  margin: 0;
-  font-size: 1.5em;
+.chat-input input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px 0 0 5px;
 }
 
-.stream-details p {
-  margin: 5px 0;
+.chat-input button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background-color: #0056b3;
 }
 
 @media (min-width: 768px) {
