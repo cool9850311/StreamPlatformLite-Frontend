@@ -178,6 +178,45 @@ const pollDeletedMessages = async () => {
   }
 };
 
+const initializeHls = (video, streamURL) => {
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(streamURL);
+    hls.attachMedia(video);
+
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play();
+    });
+
+    hls.on(Hls.Events.ERROR, (event, data) => {
+      if (data.fatal) {
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            // Try to recover network error
+            console.error('Network error encountered, trying to recover...');
+            hls.startLoad();
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            // Try to recover media error
+            console.error('Media error encountered, trying to recover...');
+            hls.recoverMediaError();
+            break;
+          default:
+            // Cannot recover
+            console.error('Fatal error encountered, destroying HLS instance...');
+            hls.destroy();
+            break;
+        }
+      }
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = streamURL;
+    video.addEventListener('loadedmetadata', () => {
+      video.play();
+    });
+  }
+};
+
 onMounted(async () => {
   try {
     // Retrieve token from localStorage
@@ -197,16 +236,9 @@ onMounted(async () => {
     streamDescription.value = streamData.value.information;
     const streamURL = streamData.value.streamURL;
 
-    // Initialize HLS.js
+    // Initialize HLS.js with retry logic
     const video = document.getElementById('video');
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(streamURL);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play();
-      });
-    }
+    initializeHls(video, streamURL);
 
     // Function to ping viewer count
     const pingViewerCount = async () => {
@@ -395,7 +427,7 @@ onMounted(async () => {
   }
 
   .stream-video {
-    flex: 5; /* 70% width */
+    flex: 3; /* 70% width */
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
@@ -419,6 +451,7 @@ onMounted(async () => {
     padding-bottom: 0;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    
   }
 
   .chatroom {
