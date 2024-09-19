@@ -92,9 +92,12 @@ export default {
         });
         if (!response.ok) {
           console.error('Failed to save settings');
+          alert('Failed to save settings.');
         }
+        alert('System Setting saved successfully.');
       } catch (error) {
         console.error('Error saving settings:', error);
+        alert('Failed to save settings.');
       }
     }
   }

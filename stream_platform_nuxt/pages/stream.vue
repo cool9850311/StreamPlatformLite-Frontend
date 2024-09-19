@@ -33,7 +33,7 @@
     <!-- Context menu for message options -->
     <div v-if="showContextMenu" class="context-menu" :style="{ top: contextMenuY + 'px', left: contextMenuX + 'px' }">
       <button @click="deleteMessage(selectedMessage)">Delete</button>
-      <button @click="muteUser(selectedMessage.username)">Mute</button>
+      <button @click="muteUser(selectedMessage)">Mute</button>
     </div>
   </div>
 </template>
@@ -66,7 +66,7 @@ const scrollToBottom = () => {
 
 const sendMessage = async () => {
   if (newMessage.value.trim() === '') return;
-
+  
   try {
     const token = localStorage.getItem('token');
     const runtimeConfig = useRuntimeConfig();
@@ -84,6 +84,11 @@ const sendMessage = async () => {
 
     newMessage.value = ''; // Clear the input after sending
   } catch (error) {
+    if (error.response && error.response.status === 403) {
+      // Handle 403 Forbidden error
+      console.error('You are not allowed to send messages in this chat.');
+      alert('You are not allowed to send messages in this chat. You may be muted or banned.');
+    }
     console.error('Error sending message:', error);
   }
 };
@@ -122,15 +127,33 @@ const deleteMessage = async (message) => {
 
     messages.value = messages.value.filter(m => m.id !== message.id);
     showContextMenu.value = false;
+    alert('Message deleted successfully.');
   } catch (error) {
     console.error('Error deleting message:', error);
+    alert('Failed to delete message.');
   }
 };
 
-const muteUser = (username) => {
-  // Implement mute functionality here
-  console.log(`Muting user: ${username}`);
-  showContextMenu.value = false;
+const muteUser = async (message) => {
+  try {
+    const token = localStorage.getItem('token');
+    const runtimeConfig = useRuntimeConfig();
+    const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+    await axios.post(`${backendUrl}/livestream/mute-user`, {
+      stream_uuid: streamData.value.uuid,
+      user_id: message.user_id
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    showContextMenu.value = false;
+    alert('User muted successfully.');
+  } catch (error) {
+    console.error('Error muting user:', error);
+    alert('Failed to mute user.');
+  }
 };
 
 // Function to poll for deleted messages
