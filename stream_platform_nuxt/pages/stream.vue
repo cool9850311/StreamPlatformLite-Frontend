@@ -10,7 +10,7 @@
             <h2>{{ streamTitle }}</h2>
             <p class="view-count">Viewers: {{ viewCount }}</p>
           </div>
-          <p>{{ streamDescription }}</p>
+          <p v-html="formattedStreamDescription" class="stream-description"></p>
         </div>
       </div>
       <div class="chatroom" ref="chatroom">
@@ -42,6 +42,7 @@
 import { ref, onMounted, watch, nextTick } from 'vue';
 import Hls from 'hls.js';
 import axios from 'axios';
+import { computed } from 'vue';
 
 // Reactive variables
 const streamData = ref({});
@@ -216,6 +217,10 @@ const initializeHls = (video, streamURL) => {
     });
   }
 };
+
+const formattedStreamDescription = computed(() => {
+  return streamDescription.value.replace(/\n/g, '<br>');
+});
 
 onMounted(async () => {
   try {
@@ -431,6 +436,10 @@ onMounted(async () => {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
+  .stream-description {
+    overflow-y: scroll; /* Make it scrollable */
+    max-height: 5.5em; /* Approx. 3 lines */
+  }
 
   .chatroom {
     flex: 2; /* 30% width */
@@ -452,6 +461,11 @@ onMounted(async () => {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     
+  }
+
+  .stream-description {
+    max-height: 4.5em; /* Approx. 3 lines */
+    overflow-y: scroll; /* Make it scrollable */
   }
 
   .chatroom {
