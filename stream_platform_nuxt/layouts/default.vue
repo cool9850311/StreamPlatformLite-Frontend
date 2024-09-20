@@ -61,7 +61,14 @@ export default {
       this.$router.push('/');
       return;
     }
-    const decodedToken = this.decodeJWT(token);
+    const decodedToken = this.decodeJWT(token);   
+    // Check if token is expired
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (decodedToken.exp && decodedToken.exp < currentTime) {
+      // Token has expired, log out the user
+      this.logout();
+      return;
+    }
     this.isAdmin = decodedToken.Role === 0;
   },
   methods: {
