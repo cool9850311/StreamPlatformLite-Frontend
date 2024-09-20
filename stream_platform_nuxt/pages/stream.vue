@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import Hls from 'hls.js';
 import axios from 'axios';
 import { computed } from 'vue';
@@ -222,6 +222,16 @@ const formattedStreamDescription = computed(() => {
   return streamDescription.value.replace(/\n/g, '<br>');
 });
 
+const handleClickOutside = (event) => {
+  const contextMenu = document.querySelector('.context-menu');
+  const messageElements = document.querySelectorAll('.messages li');
+  const isClickOnMessage = Array.from(messageElements).some(el => el.contains(event.target));
+
+  if (contextMenu && !contextMenu.contains(event.target) && !isClickOnMessage) {
+    showContextMenu.value = false;
+  }
+};
+
 onMounted(async () => {
   try {
     // Retrieve token from localStorage
@@ -289,6 +299,8 @@ onMounted(async () => {
     // Poll for deleted messages every 2 seconds
     setInterval(pollDeletedMessages, 2000);
     pollDeletedMessages();
+
+    document.addEventListener('click', handleClickOutside);
   } catch (error) {
     if (error.response && error.response.status === 401) {
       // Redirect to notAllowed page
@@ -297,6 +309,10 @@ onMounted(async () => {
       console.error('Error fetching stream details:', error);
     }
   }
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 </script>
 
