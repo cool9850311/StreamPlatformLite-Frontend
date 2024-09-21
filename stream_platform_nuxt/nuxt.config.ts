@@ -6,8 +6,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      DISCORD_URL: process.env.DISCORD_URL,
-      BACKEND_URL: process.env.BACKEND_URL
+      DISCORD_URL: '',
+      BACKEND_URL: ''
     }
   },
 })
