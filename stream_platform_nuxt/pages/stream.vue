@@ -181,7 +181,14 @@ const pollDeletedMessages = async () => {
 
 const initializeHls = (video, streamURL) => {
   if (Hls.isSupported()) {
-    const hls = new Hls();
+    const token = localStorage.getItem('token');
+    const hls = new Hls(
+      {
+        xhrSetup: (xhr, url) => {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
+      }
+    );
     hls.loadSource(streamURL);
     hls.attachMedia(video);
 
