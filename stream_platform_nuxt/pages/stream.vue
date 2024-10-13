@@ -17,9 +17,12 @@
         <!-- Dynamic chatroom -->
         <div class="messages">
           <ul>
-            <li v-for="message in messages" :key="message.id" @click="showOptions(message, $event)">
-              <div class="username">{{ message.username }}</div>
-              <div class="message">{{ message.message }}</div>
+            <li v-for="message in messages" :key="message.id" @click="showOptions(message, $event)" class="message-item">
+              <img :src="`https://cdn.discordapp.com/avatars/${message.user_id}/${message.avatar}.png`" alt="User Avatar" class="user-avatar" />
+              <div class="message-content">
+                <div class="username">{{ message.username }}</div>
+                <div class="message">{{ message.message }}</div>
+              </div>
             </li>
           </ul>
         </div>
@@ -419,7 +422,6 @@ onUnmounted(() => {
 .message {
   word-wrap: break-word;
   flex: 1;
-  overflow-y: scroll;
 }
 
 .chat-input {
@@ -524,5 +526,26 @@ onUnmounted(() => {
 
 .context-menu button:hover {
   background-color: #f0f0f0;
+}
+
+.message-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  background-color: #e9ecef;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
 }
 </style>
