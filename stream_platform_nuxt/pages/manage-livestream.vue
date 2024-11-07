@@ -88,11 +88,28 @@ export default {
       const backendUrl = runtimeConfig.public.BACKEND_URL;
 
       try {
-        const response = await fetch(`${backendUrl}/livestream/owner/${userId}`, {
+        // First request to get the UUID
+        const initialResponse = await fetch(`${backendUrl}/livestream/one`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
+
+        if (!initialResponse.ok) {
+          console.error('Failed to fetch initial livestream data');
+          return;
+        }
+
+        const initialData = await initialResponse.json();
+        const uuid = initialData.uuid;
+
+        // Second request to get full data using the UUID
+        const response = await fetch(`${backendUrl}/livestream/${uuid}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
         if (response.ok) {
           const data = await response.json();
           this.livestream = data;
