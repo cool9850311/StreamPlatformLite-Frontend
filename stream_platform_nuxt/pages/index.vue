@@ -2,6 +2,7 @@
   <div class="login-page">
     <h1>Login with Discord</h1>
     <a :href="discordOAuthUrl" class="login-button">Login with Discord</a>
+    <a href="/native-login" class="native-login-link">Native Account Login</a>
   </div>
 </template>
 
@@ -53,5 +54,11 @@ onMounted(() => {
   color: white;
   text-decoration: none;
   border-radius: 5px;
+}
+
+.native-login-link {
+  margin-top: 10px;
+  color: #7289da;
+  text-decoration: underline;
 }
 </style>

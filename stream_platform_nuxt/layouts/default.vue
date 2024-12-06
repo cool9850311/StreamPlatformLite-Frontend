@@ -28,6 +28,12 @@
               <MenuItem v-if="isAdmin">
                 <a href="/manage-livestream" class="dropdown-item">Manage Livestreams</a>
               </MenuItem>
+              <MenuItem v-if="isAdmin">
+                <a href="/manage-accounts" class="dropdown-item">Manage Accounts</a>
+              </MenuItem>
+              <MenuItem v-if="isNative">
+                <a href="/account" class="dropdown-item">Account</a>
+              </MenuItem>
               <MenuItem>
                 <a href="#" @click="logout" class="dropdown-item">Logout</a>
               </MenuItem>
@@ -52,7 +58,8 @@ export default {
   },
   data() {
     return {
-      isAdmin: false
+      isAdmin: false,
+      isNative: false
     };
   },
   mounted() {
@@ -70,6 +77,7 @@ export default {
       return;
     }
     this.isAdmin = decodedToken.Role === 0;
+    this.isNative = decodedToken.IdentityProvider === 'Origin';
   },
   methods: {
     logout() {

@@ -38,10 +38,16 @@
     <h2>{{ livestream.title }}</h2>
     <p>{{ livestream.information }}</p>
   </div>
+  <Notification ref="notification" />
 </template>
 
 <script>
+import Notification from '@/components/notification.vue';
+
 export default {
+  components: {
+    Notification
+  },
   data() {
     return {
       livestream: {
@@ -57,7 +63,11 @@ export default {
       banListString: '',
       muteListString: '',
       hasAccess: false,
-      isLivestreamExist: false
+      isLivestreamExist: false,
+      notification: {
+        message: '',
+        type: ''
+      }
     };
   },
   mounted() {
@@ -144,17 +154,19 @@ export default {
           body: JSON.stringify(livestreamData)
         });
         if (!response.ok) {
-          console.error('Failed to create livestream');
+          const errorData = await response.json();
+          this.$refs.notification.showNotification(errorData.message || 'Failed to create livestream', 'error');
         } else {
           const data = await response.json();
           this.livestream = data;
           this.isLivestreamExist = true;
           const token = localStorage.getItem('token');
           const decodedToken = this.decodeJWT(token);
-          this.fetchLivestream(decodedToken.UserID); // Call fetchLivestream with userId
+          this.fetchLivestream(decodedToken.UserID);
+          this.$refs.notification.showNotification('Livestream created successfully.', 'success');
         }
       } catch (error) {
-        console.error('Error creating livestream:', error);
+        this.$refs.notification.showNotification('Error creating livestream: ' + error.message, 'error');
       }
     },
     async deleteLivestream() {
@@ -169,7 +181,8 @@ export default {
           }
         });
         if (!response.ok) {
-          console.error('Failed to delete livestream');
+          const errorData = await response.json();
+          this.$refs.notification.showNotification(errorData.message || 'Failed to delete livestream', 'error');
         } else {
           this.livestream = {
             uuid: '',
@@ -182,9 +195,10 @@ export default {
             muteList: []
           };
           this.isLivestreamExist = false;
+          this.$refs.notification.showNotification('Livestream deleted successfully.', 'success');
         }
       } catch (error) {
-        console.error('Error deleting livestream:', error);
+        this.$refs.notification.showNotification('Error deleting livestream: ' + error.message, 'error');
       }
     }
   }
