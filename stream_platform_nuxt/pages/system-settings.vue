@@ -3,7 +3,7 @@
     <h1>System Settings</h1>
     <form @submit.prevent="saveSettings" class="settings-form">
       <div class="form-group">
-        <label for="editorRoleId">Editor Role ID:</label>
+        <label for="editorRoleId">Moderator Role ID:</label>
         <input v-model="settings.editorRoleId" id="editorRoleId" type="text" class="form-control" />
       </div>
       <div class="form-group">
@@ -12,11 +12,16 @@
       </div>
       <button type="submit" class="btn btn-primary">Save</button>
     </form>
+
+    <notification ref="notificationComponent" />
   </div>
 </template>
 
 <script>
 export default {
+  components: {
+    Notification: () => import('@/components/notification.vue')
+  },
   data() {
     return {
       settings: {
@@ -90,14 +95,14 @@ export default {
             stream_access_role_ids: this.settings.streamAccessRoleIds
           })
         });
-        if (!response.ok) {
-          console.error('Failed to save settings');
-          alert('Failed to save settings.');
+        if (response.ok) {
+          this.$refs.notificationComponent.showNotification('System Setting saved successfully.', 'success');
+        } else {
+          const errorData = await response.json();
+          this.$refs.notificationComponent.showNotification(errorData.message || 'Failed to save settings', 'error');
         }
-        alert('System Setting saved successfully.');
       } catch (error) {
-        console.error('Error saving settings:', error);
-        alert('Failed to save settings.');
+        this.$refs.notificationComponent.showNotification('Error saving settings: ' + error.message, 'error');
       }
     }
   }

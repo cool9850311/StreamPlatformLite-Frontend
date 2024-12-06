@@ -18,7 +18,14 @@
         <div class="messages">
           <ul>
             <li v-for="message in messages" :key="message.id" @click="showOptions(message, $event)" class="message-item">
-              <img :src="`https://cdn.discordapp.com/avatars/${message.user_id}/${message.avatar}.png`" alt="User Avatar" class="user-avatar" />
+              <img 
+                :src="message.avatar ? `https://cdn.discordapp.com/avatars/${message.user_id}/${message.avatar}.png` : ''" 
+                alt="User Avatar" 
+                class="user-avatar" 
+                :class="{ 'empty-avatar': !message.avatar }" 
+                v-if="message.avatar"
+              />
+              <div v-else class="user-avatar empty-avatar"></div>
               <div class="message-content">
                 <div class="username">{{ message.username }}</div>
                 <div class="message">{{ message.message }}</div>
@@ -38,6 +45,8 @@
       <button @click="deleteMessage(selectedMessage)">Delete</button>
       <button @click="muteUser(selectedMessage)">Mute</button>
     </div>
+    <!-- Use the Notification Component -->
+    <Notification ref="notification" />
   </div>
 </template>
 
@@ -46,8 +55,8 @@ import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import Hls from 'hls.js';
 import axios from 'axios';
 import { computed } from 'vue';
+import Notification from '~/components/notification.vue'; // Import the Notification component
 
-// Reactive variables
 const streamData = ref({});
 const streamTitle = ref('Stream Title');
 const streamDescription = ref('This is a description of the stream.');
@@ -60,6 +69,7 @@ const showContextMenu = ref(false);
 const contextMenuX = ref(0);
 const contextMenuY = ref(0);
 const selectedMessage = ref(null);
+const notification = ref(null);
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -86,10 +96,9 @@ const sendMessage = async () => {
       }
     });
 
-    newMessage.value = ''; // Clear the input after sending
+    newMessage.value = '';
   } catch (error) {
     if (error.response && error.response.status === 403) {
-      // Handle 403 Forbidden error
       console.error('You are not allowed to send messages in this chat.');
       alert('You are not allowed to send messages in this chat. You may be muted or banned.');
     }
@@ -108,7 +117,7 @@ const decodeJWT = (token) => {
 
 const showOptions = (message, event) => {
   const token = localStorage.getItem('token');
-  const decodedToken = decodeJWT(token); // Use decodeJWT to parse the token
+  const decodedToken = decodeJWT(token);
   if (decodedToken && decodedToken.Role <= 2) {
     selectedMessage.value = message;
     contextMenuX.value = event.clientX;
@@ -123,18 +132,22 @@ const deleteMessage = async (message) => {
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
 
-    await axios.delete(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${message.id}`, {
+    const response = await axios.delete(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${message.id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
 
-    messages.value = messages.value.filter(m => m.id !== message.id);
-    showContextMenu.value = false;
-    alert('Message deleted successfully.');
+    if (response.status === 200) {
+      messages.value = messages.value.filter(m => m.id !== message.id);
+      showContextMenu.value = false;
+      notification.value.showNotification('Message deleted successfully.', 'success');
+    } else {
+      notification.value.showNotification('Failed to delete message', 'error');
+    }
   } catch (error) {
     console.error('Error deleting message:', error);
-    alert('Failed to delete message.');
+    notification.value.showNotification('Failed to delete message', 'error');
   }
 };
 
@@ -144,7 +157,7 @@ const muteUser = async (message) => {
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
 
-    await axios.post(`${backendUrl}/livestream/mute-user`, {
+    const response = await axios.post(`${backendUrl}/livestream/mute-user`, {
       stream_uuid: streamData.value.uuid,
       user_id: message.user_id
     }, {
@@ -152,15 +165,19 @@ const muteUser = async (message) => {
         Authorization: `Bearer ${token}`
       }
     });
-    showContextMenu.value = false;
-    alert('User muted successfully.');
+
+    if (response.status === 200) {
+      showContextMenu.value = false;
+      notification.value.showNotification('User muted successfully.', 'success');
+    } else {
+      notification.value.showNotification('Failed to mute user', 'error');
+    }
   } catch (error) {
     console.error('Error muting user:', error);
-    alert('Failed to mute user.');
+    notification.value.showNotification('Failed to mute user', 'error');
   }
 };
 
-// Function to poll for deleted messages
 const pollDeletedMessages = async () => {
   try {
     const token = localStorage.getItem('token');
@@ -203,17 +220,14 @@ const initializeHls = (video, streamURL) => {
       if (data.fatal) {
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
-            // Try to recover network error
             console.error('Network error encountered, trying to recover...');
             hls.startLoad();
             break;
           case Hls.ErrorTypes.MEDIA_ERROR:
-            // Try to recover media error
             console.error('Media error encountered, trying to recover...');
             hls.recoverMediaError();
             break;
           default:
-            // Cannot recover
             console.error('Fatal error encountered, destroying HLS instance...');
             hls.destroy();
             break;
@@ -244,13 +258,11 @@ const handleClickOutside = (event) => {
 
 onMounted(async () => {
   try {
-    // Retrieve token from localStorage
     const token = localStorage.getItem('token');
-    const decodedToken = decodeJWT(token); // Use decodeJWT to parse the token
+    const decodedToken = decodeJWT(token);
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
 
-    // Fetch stream details with Bearer token
     const response = await axios.get(`${backendUrl}/livestream/one`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -261,11 +273,9 @@ onMounted(async () => {
     streamDescription.value = streamData.value.information;
     const streamURL = streamData.value.streamURL;
 
-    // Initialize HLS.js with retry logic
     const video = document.getElementById('video');
     initializeHls(video, streamURL);
 
-    // Function to ping viewer count
     const pingViewerCount = async () => {
       try {
         const response = await axios.get(`${backendUrl}/livestream/ping-viewer-count/${streamData.value.uuid}`, {
@@ -279,11 +289,9 @@ onMounted(async () => {
       }
     };
 
-    // Poll for viewer count every 5 seconds
     setInterval(pingViewerCount, 5000);
     pingViewerCount();
 
-    // Fetch chat messages
     const fetchMessages = async () => {
       try {
         const response = await axios.get(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${lastMessageId.value}`, {
@@ -302,18 +310,15 @@ onMounted(async () => {
       }
     };
 
-    // Poll for new messages every half second
     setInterval(fetchMessages, 500);
     fetchMessages();
 
-    // Poll for deleted messages every 2 seconds
     setInterval(pollDeletedMessages, 2000);
     pollDeletedMessages();
 
     document.addEventListener('click', handleClickOutside);
   } catch (error) {
     if (error.response && error.response.status === 401) {
-      // Redirect to notAllowed page
       window.location.href = '/notAllowed';
     } else {
       console.error('Error fetching stream details:', error);
@@ -366,11 +371,11 @@ onUnmounted(() => {
   flex-direction: column;
   flex-grow: 1;
   padding: 20px;
-  overflow: hidden; /* Prevent content from overflowing */
+  overflow: hidden;
 }
 
 .stream-video {
-  flex: 5; /* 70% height */
+  flex: 5;
   padding: 10px;
   background-color: #fff;
   border-radius: 10px;
@@ -386,25 +391,25 @@ onUnmounted(() => {
 .chatroom {
   display: flex;
   flex-direction: column;
-  flex: 2; /* 30% height */
+  flex: 2;
   padding: 10px;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-top: 0; /* Remove margin to connect with stream-video */
-  overflow: hidden; /* Prevent content from overflowing */
+  margin-top: 0;
+  overflow: hidden;
 }
 
 .messages {
   flex: 1;
   overflow-y: auto;
-  max-height: 80%; /* 80% of the chatroom height */
+  max-height: 80%;
 }
 
 .chatroom ul {
   list-style-type: none;
   padding: 0;
-  margin: 0; /* Ensure no extra margin */
+  margin: 0;
 }
 
 .chatroom li {
@@ -428,7 +433,7 @@ onUnmounted(() => {
   display: flex;
   margin-top: 10px;
   flex-shrink: 0;
-  max-height: 20%; /* 20% of the chatroom height */
+  max-height: 20%;
 }
 
 .chat-input input {
@@ -457,17 +462,17 @@ onUnmounted(() => {
   }
 
   .stream-video {
-    flex: 3; /* 70% width */
+    flex: 3;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
   .stream-description {
-    overflow-y: scroll; /* Make it scrollable */
-    max-height: 5.5em; /* Approx. 3 lines */
+    overflow-y: scroll;
+    max-height: 5.5em;
   }
 
   .chatroom {
-    flex: 2; /* 30% width */
+    flex: 2;
     margin-top: 0;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
@@ -481,7 +486,7 @@ onUnmounted(() => {
   }
 
   .stream-video {
-    flex: 4; /* 70% height */
+    flex: 4;
     padding-bottom: 0;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -489,12 +494,12 @@ onUnmounted(() => {
   }
 
   .stream-description {
-    max-height: 4.5em; /* Approx. 3 lines */
-    overflow-y: scroll; /* Make it scrollable */
+    max-height: 4.5em;
+    overflow-y: scroll;
   }
 
   .chatroom {
-    flex: 6; /* 30% height */
+    flex: 6;
     margin-top: 0;
     padding-top: 0;
     border-top-left-radius: 0;
@@ -547,5 +552,12 @@ onUnmounted(() => {
 .message-content {
   display: flex;
   flex-direction: column;
+}
+
+.empty-avatar {
+  background-color: #e9ecef;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
 </style>
