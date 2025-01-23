@@ -70,6 +70,7 @@ const contextMenuX = ref(0);
 const contextMenuY = ref(0);
 const selectedMessage = ref(null);
 const notification = ref(null);
+let retryInterval = null;
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -202,17 +203,21 @@ const pollDeletedMessages = async () => {
 const initializeHls = (video, streamURL) => {
   if (Hls.isSupported()) {
     const token = localStorage.getItem('token');
-    const hls = new Hls(
-      {
-        xhrSetup: (xhr, url) => {
-          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        }
+    const hls = new Hls({
+      xhrSetup: (xhr, url) => {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
       }
-    );
+    });
+
     hls.loadSource(streamURL);
     hls.attachMedia(video);
 
+    // Clear retry interval if we successfully parse the manifest and start playing
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      if (retryInterval) {
+        clearInterval(retryInterval);
+        retryInterval = null;
+      }
       video.play();
     });
 
@@ -220,13 +225,27 @@ const initializeHls = (video, streamURL) => {
       if (data.fatal) {
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
-            console.error('Network error encountered, trying to recover...');
-            hls.startLoad();
+            // Check if it's specifically a 404 error
+            if (data.response && data.response.code === 404) {
+              console.error('404 error encountered. Scheduling retry every second...');
+              if (!retryInterval) {
+                retryInterval = setInterval(() => {
+                  console.log('Retrying to load source...');
+                  hls.loadSource(streamURL);
+                  hls.startLoad();
+                }, 1000);
+              }
+            } else {
+              console.error('Network error encountered, trying to recover...');
+              hls.startLoad();
+            }
             break;
+
           case Hls.ErrorTypes.MEDIA_ERROR:
             console.error('Media error encountered, trying to recover...');
             hls.recoverMediaError();
             break;
+
           default:
             console.error('Fatal error encountered, destroying HLS instance...');
             hls.destroy();
