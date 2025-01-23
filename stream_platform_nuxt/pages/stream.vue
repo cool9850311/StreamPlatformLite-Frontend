@@ -101,7 +101,7 @@ const sendMessage = async () => {
   } catch (error) {
     if (error.response && error.response.status === 403) {
       console.error('You are not allowed to send messages in this chat.');
-      alert('You are not allowed to send messages in this chat. You may be muted or banned.');
+      notification.value.showNotification('You are not allowed to send messages in this chat. You may be muted or banned.', 'error');
     }
     console.error('Error sending message:', error);
   }
