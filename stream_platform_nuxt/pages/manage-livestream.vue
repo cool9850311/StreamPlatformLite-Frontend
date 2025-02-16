@@ -53,6 +53,7 @@
 
 <script>
 import Notification from '@/components/notification.vue';
+import { useNuxtApp } from '#app';
 
 export default {
   components: {
@@ -222,6 +223,7 @@ export default {
       
       const runtimeConfig = useRuntimeConfig();
       const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const nuxtApp = useNuxtApp();
       
       const checkAndDownload = async () => {
         try {
@@ -232,11 +234,19 @@ export default {
           });
 
           if (response.status === 404) {
-            this.$refs.notification.showNotification('File processing, please wait...', 'info');
+            nuxtApp.$swal.fire({
+              title: 'Processing Recording',
+              text: 'Please wait while your recording is being processed...',
+              icon: 'info',
+              allowOutsideClick: false,
+              showConfirmButton: false
+            });
             return false;
           }
 
           if (response.ok) {
+            nuxtApp.$swal.close();
+            
             // Get filename from Content-Disposition header
             const contentDisposition = response.headers.get('Content-Disposition');
             const filename = contentDisposition
@@ -254,7 +264,6 @@ export default {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
 
-            // Clear interval and close notification
             if (this.downloadInterval) {
               clearInterval(this.downloadInterval);
               this.downloadInterval = null;
@@ -264,6 +273,7 @@ export default {
           }
           return false;
         } catch (error) {
+          nuxtApp.$swal.close();
           console.error('Error downloading recording:', error);
           this.$refs.notification.showNotification('Error downloading recording', 'error');
           if (this.downloadInterval) {
