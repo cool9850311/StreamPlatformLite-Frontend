@@ -30,6 +30,13 @@
         <label for="muteList">Mute List:</label>
         <textarea v-model="muteListString" id="muteList" class="form-control" :disabled=true></textarea>
       </div>
+      <div class="form-group">
+        <label for="is_record">Record Stream:</label><br>
+        <label class="switch">
+          <input v-model="livestream.is_record" id="is_record" type="checkbox" :disabled="isLivestreamExist">
+          <span class="slider round"></span>
+        </label>
+      </div>
       <button v-if="!isLivestreamExist" type="submit" class="btn btn-primary">Create</button>
       <button v-if="isLivestreamExist" type="button" @click="deleteLivestream" class="btn btn-danger">Delete</button>
     </form>
@@ -58,7 +65,8 @@ export default {
         information: '',
         streamPushURL: '',
         banList: [],
-        muteList: []
+        muteList: [],
+        is_record: true
       },
       banListString: '',
       muteListString: '',
@@ -141,7 +149,8 @@ export default {
         name: this.livestream.name,
         visibility: this.livestream.visibility,
         title: this.livestream.title,
-        information: this.livestream.information
+        information: this.livestream.information,
+        is_record: this.livestream.is_record
       };
 
       try {
@@ -192,7 +201,8 @@ export default {
             information: '',
             streamPushURL: '',
             banList: [],
-            muteList: []
+            muteList: [],
+            is_record: true
           };
           this.isLivestreamExist = false;
           this.$refs.notification.showNotification('Livestream deleted successfully.', 'success');
@@ -254,5 +264,60 @@ export default {
 
 .btn-danger:hover {
   background-color: #c82333;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #007bff;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #007bff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
 </style>
