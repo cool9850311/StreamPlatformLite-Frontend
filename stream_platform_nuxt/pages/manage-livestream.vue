@@ -37,6 +37,9 @@
           <span class="slider round"></span>
         </label>
       </div>
+      <div v-if="isLivestreamExist && livestream.is_record" class="form-group">
+        <button type="button" @click="downloadRecording" class="btn btn-success">Download Recording</button>
+      </div>
       <button v-if="!isLivestreamExist" type="submit" class="btn btn-primary">Create</button>
       <button v-if="isLivestreamExist" type="button" @click="deleteLivestream" class="btn btn-danger">Delete</button>
     </form>
@@ -75,7 +78,9 @@ export default {
       notification: {
         message: '',
         type: ''
-      }
+      },
+      downloadInterval: null,
+      isDownloading: false,
     };
   },
   mounted() {
@@ -210,6 +215,83 @@ export default {
       } catch (error) {
         this.$refs.notification.showNotification('Error deleting livestream: ' + error.message, 'error');
       }
+    },
+    async downloadRecording() {
+      if (this.isDownloading) return;
+      this.isDownloading = true;
+      
+      const runtimeConfig = useRuntimeConfig();
+      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      
+      const checkAndDownload = async () => {
+        try {
+          const response = await fetch(`${backendUrl}/livestream/record/${this.livestream.uuid}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+
+          if (response.status === 404) {
+            this.$refs.notification.showNotification('File processing, please wait...', 'info');
+            return false;
+          }
+
+          if (response.ok) {
+            // Get filename from Content-Disposition header
+            const contentDisposition = response.headers.get('Content-Disposition');
+            const filename = contentDisposition
+              ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+              : 'recording.mp4';
+
+            // Create blob and trigger download
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            // Clear interval and close notification
+            if (this.downloadInterval) {
+              clearInterval(this.downloadInterval);
+              this.downloadInterval = null;
+            }
+            this.isDownloading = false;
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Error downloading recording:', error);
+          this.$refs.notification.showNotification('Error downloading recording', 'error');
+          if (this.downloadInterval) {
+            clearInterval(this.downloadInterval);
+            this.downloadInterval = null;
+          }
+          this.isDownloading = false;
+          return true;
+        }
+      };
+
+      // First attempt
+      const downloaded = await checkAndDownload();
+      if (!downloaded) {
+        // If not downloaded, start polling
+        this.downloadInterval = setInterval(async () => {
+          const success = await checkAndDownload();
+          if (success && this.downloadInterval) {
+            clearInterval(this.downloadInterval);
+            this.downloadInterval = null;
+          }
+        }, 1000);
+      }
+    },
+  },
+  beforeUnmount() {
+    if (this.downloadInterval) {
+      clearInterval(this.downloadInterval);
     }
   }
 };
@@ -264,6 +346,16 @@ export default {
 
 .btn-danger:hover {
   background-color: #c82333;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  margin-bottom: 15px;
+}
+
+.btn-success:hover {
+  background-color: #218838;
 }
 
 .switch {
