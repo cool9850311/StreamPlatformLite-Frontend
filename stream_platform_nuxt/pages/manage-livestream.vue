@@ -185,36 +185,57 @@ export default {
       }
     },
     async deleteLivestream() {
-      const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const nuxtApp = useNuxtApp();
+      
+      // Show confirmation dialog
+      const result = await nuxtApp.$swal.fire({
+        title: 'Are you sure?',
+        text: "This will delete the livestream and all associated recordings. This action cannot be undone!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+      });
 
-      try {
-        const response = await fetch(`${backendUrl}/livestream/${this.livestream.uuid}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+      // If user confirms deletion
+      if (result.isConfirmed) {
+        const runtimeConfig = useRuntimeConfig();
+        const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+        try {
+          const response = await fetch(`${backendUrl}/livestream/${this.livestream.uuid}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            this.$refs.notification.showNotification(errorData.message || 'Failed to delete livestream', 'error');
+          } else {
+            this.livestream = {
+              uuid: '',
+              name: '',
+              visibility: 'member_only',
+              title: '',
+              information: '',
+              streamPushURL: '',
+              banList: [],
+              muteList: [],
+              is_record: true
+            };
+            this.isLivestreamExist = false;
+            nuxtApp.$swal.fire(
+              'Deleted!',
+              'Your livestream has been deleted.',
+              'success'
+            );
           }
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          this.$refs.notification.showNotification(errorData.message || 'Failed to delete livestream', 'error');
-        } else {
-          this.livestream = {
-            uuid: '',
-            name: '',
-            visibility: 'member_only',
-            title: '',
-            information: '',
-            streamPushURL: '',
-            banList: [],
-            muteList: [],
-            is_record: true
-          };
-          this.isLivestreamExist = false;
-          this.$refs.notification.showNotification('Livestream deleted successfully.', 'success');
+        } catch (error) {
+          this.$refs.notification.showNotification('Error deleting livestream: ' + error.message, 'error');
         }
-      } catch (error) {
-        this.$refs.notification.showNotification('Error deleting livestream: ' + error.message, 'error');
       }
     },
     async downloadRecording() {
@@ -225,6 +246,8 @@ export default {
       const backendUrl = runtimeConfig.public.BACKEND_URL;
       const nuxtApp = useNuxtApp();
       
+      let processingAlertShown = false;  // Add flag to track if alert is shown
+
       const checkAndDownload = async () => {
         try {
           const response = await fetch(`${backendUrl}/livestream/record/${this.livestream.uuid}`, {
@@ -234,24 +257,39 @@ export default {
           });
 
           if (response.status === 404) {
-            nuxtApp.$swal.fire({
-              title: 'Processing Recording',
-              text: 'Please wait while your recording is being processed...',
-              icon: 'info',
-              allowOutsideClick: false,
-              showConfirmButton: false
-            });
+            if (!processingAlertShown) {  // Only show alert if not already shown
+              processingAlertShown = true;
+              nuxtApp.$swal.fire({
+                title: 'Processing Recording',
+                text: 'Please wait while your recording is being processed...',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false
+              });
+            }
             return false;
           }
 
           if (response.ok) {
             nuxtApp.$swal.close();
-            
-            // Get filename from Content-Disposition header
+            processingAlertShown = false;  // Reset flag after alert is closed
+            // Get filename from Content-Disposition header with UTF-8 support
             const contentDisposition = response.headers.get('Content-Disposition');
-            const filename = contentDisposition
-              ? contentDisposition.split('filename=')[1].replace(/"/g, '')
-              : 'recording.mp4';
+            let filename = 'recording.mp4';
+            
+            if (contentDisposition) {
+              // Check for UTF-8 encoded filename
+              const filenameMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/);
+              if (filenameMatch) {
+                filename = decodeURIComponent(filenameMatch[1]);
+              } else {
+                // Fallback to regular filename
+                const regularMatch = contentDisposition.match(/filename="?([^";\n]*)"?/);
+                if (regularMatch) {
+                  filename = regularMatch[1];
+                }
+              }
+            }
 
             // Create blob and trigger download
             const blob = await response.blob();
