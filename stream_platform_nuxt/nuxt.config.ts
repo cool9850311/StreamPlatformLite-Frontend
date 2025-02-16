@@ -13,4 +13,7 @@ export default defineNuxtConfig({
       BACKEND_URL: ''
     }
   },
+  plugins: [
+    '~/plugins/sweetalert.ts'
+  ],
 })
