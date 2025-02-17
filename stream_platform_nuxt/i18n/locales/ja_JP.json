@@ -1,0 +1,112 @@
+{
+  "navigation": {
+    "stream": "ライブ配信",
+    "system_settings": "システム設定",
+    "manage_livestreams": "ライブ配信管理",
+    "manage_accounts": "アカウント管理",
+    "account": "アカウント",
+    "logout": "ログアウト"
+  },
+  "account": {
+    "change_password": "パスワード変更",
+    "old_password": "現在のパスワード：",
+    "new_password": "新しいパスワード：",
+    "submit": "パスワードを変更",
+    "success": "パスワードが正常に変更されました。",
+    "error": "パスワードの変更に失敗しました"
+  },
+  "login": {
+    "title": "Discordでログイン",
+    "discord_button": "Discordでログイン",
+    "native_login": "アカウントログイン"
+  },
+  "native_login": {
+    "title": "ネイティブアカウントログイン",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "login_button": "ログイン",
+    "success": "ログインに成功しました！",
+    "error": {
+      "invalid_response": "ログイン失敗：サーバーからの応答が無効です",
+      "unexpected": "予期せぬエラーが発生しました"
+    }
+  },
+  "manage_accounts": {
+    "title": "アカウント管理",
+    "username": "ユーザー名：",
+    "role": "役割：",
+    "create_button": "アカウント作成",
+    "account_created": "アカウント作成完了：",
+    "password": "パスワード：",
+    "account_list": "アカウント一覧：",
+    "delete_button": "アカウント削除",
+    "success": {
+      "create": "アカウントが正常に作成されました。",
+      "delete": "アカウントが正常に削除されました。"
+    },
+    "error": {
+      "create": "アカウントの作成に失敗しました",
+      "delete": "アカウントの削除に失敗しました",
+      "fetch": "アカウント一覧の取得に失敗しました"
+    },
+    "roles": {
+      "moderator": "モデレーター",
+      "user": "ユーザー",
+      "unknown": "不明な役割"
+    }
+  },
+  "manage_livestream": {
+    "title": "ライブ配信管理",
+    "name": "名前：",
+    "title_field": "タイトル：",
+    "information": "情報：",
+    "visibility": "公開設定：",
+    "stream_push_url": "配信URL：",
+    "ban_list": "禁止リスト：",
+    "mute_list": "ミュートリスト：",
+    "record_stream": "配信を録画：",
+    "download_recording": "録画をダウンロード",
+    "create": "作成",
+    "delete": "削除",
+    "success": {
+      "create": "ライブ配信が正常に作成されました。",
+      "delete": "ライブ配信が削除されました。"
+    },
+    "confirm_delete": {
+      "title": "本当によろしいですか？",
+      "text": "ライブ配信とすべての関連する録画が削除されます。この操作は取り消せません！",
+      "confirm_button": "はい、削除します！",
+      "cancel_button": "キャンセル"
+    }
+  },
+  "not_allowed": {
+    "title": "アクセス拒否",
+    "message": "このストリームを視聴する権限がありません。"
+  },
+  "stream": {
+    "viewers": "視聴者数",
+    "chat": {
+      "placeholder": "メッセージを入力...",
+      "send": "送信",
+      "delete": "削除",
+      "mute": "ミュート",
+      "not_allowed": "このチャットでメッセージを送信できません。ミュートまたはバンされている可能性があります。",
+      "message_deleted": "メッセージが正常に削除されました。",
+      "delete_failed": "メッセージの削除に失敗しました",
+      "user_muted": "ユーザーが正常にミュートされました。",
+      "mute_failed": "ユーザーのミュートに失敗しました"
+    }
+  },
+  "system_settings": {
+    "title": "システム設定",
+    "moderator_role_id": "モデレーター役割ID：",
+    "stream_access_role_ids": "ストリームアクセス役割ID：",
+    "save_button": "保存",
+    "success": "システム設定が正常に保存されました。",
+    "error": {
+      "save": "設定の保存に失敗しました",
+      "fetch": "設定の取得に失敗しました",
+      "general": "設定の保存中にエラーが発生しました：{message}"
+    }
+  }
+}

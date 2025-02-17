@@ -16,6 +16,8 @@
     "nuxt": "^3.13.0",
     "sweetalert2": "^11.16.1",
     "vue": "latest",
-    "vue-router": "latest"
+    "vue-router": "latest",
+    "vue-i18n": "^9.9.1",
+    "@intlify/unplugin-vue-i18n": "^2.0.0"
   }
 }

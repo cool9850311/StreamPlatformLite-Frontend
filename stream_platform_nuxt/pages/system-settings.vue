@@ -1,16 +1,16 @@
 <template>
   <div v-if="hasAccess" class="settings-container">
-    <h1>System Settings</h1>
+    <h1>{{ $t('system_settings.title') }}</h1>
     <form @submit.prevent="saveSettings" class="settings-form">
       <div class="form-group">
-        <label for="editorRoleId">Moderator Role ID:</label>
+        <label for="editorRoleId">{{ $t('system_settings.moderator_role_id') }}</label>
         <input v-model="settings.editorRoleId" id="editorRoleId" type="text" class="form-control" />
       </div>
       <div class="form-group">
-        <label for="streamAccessRoleIds">Stream Access Role IDs:</label>
+        <label for="streamAccessRoleIds">{{ $t('system_settings.stream_access_role_ids') }}</label>
         <textarea v-model="streamAccessRoleIdsString" id="streamAccessRoleIds" class="form-control"></textarea>
       </div>
-      <button type="submit" class="btn btn-primary">Save</button>
+      <button type="submit" class="btn btn-primary">{{ $t('system_settings.save_button') }}</button>
     </form>
 
     <notification ref="notificationComponent" />
@@ -18,9 +18,15 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n';
+
 export default {
   components: {
     Notification: () => import('@/components/notification.vue')
+  },
+  setup() {
+    const { t } = useI18n();
+    return { t };
   },
   data() {
     return {
@@ -71,7 +77,7 @@ export default {
           this.settings.streamAccessRoleIds = data.stream_access_role_ids;
           this.streamAccessRoleIdsString = data.stream_access_role_ids.join('\n');
         } else {
-          console.error('Failed to fetch settings');
+          console.error(this.$t('system_settings.error.fetch'));
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -96,13 +102,19 @@ export default {
           })
         });
         if (response.ok) {
-          this.$refs.notificationComponent.showNotification('System Setting saved successfully.', 'success');
+          this.$refs.notificationComponent.showNotification(this.$t('system_settings.success'), 'success');
         } else {
           const errorData = await response.json();
-          this.$refs.notificationComponent.showNotification(errorData.message || 'Failed to save settings', 'error');
+          this.$refs.notificationComponent.showNotification(
+            errorData.message || this.$t('system_settings.error.save'), 
+            'error'
+          );
         }
       } catch (error) {
-        this.$refs.notificationComponent.showNotification('Error saving settings: ' + error.message, 'error');
+        this.$refs.notificationComponent.showNotification(
+          this.$t('system_settings.error.general', { message: error.message }), 
+          'error'
+        );
       }
     }
   }

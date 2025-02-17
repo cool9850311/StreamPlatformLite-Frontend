@@ -5,41 +5,44 @@
         <ul>
           <!-- Other navigation items -->
         </ul>
-        <Menu as="div" class="relative">
-          <MenuButton class="dropdown-button">
-            <p class="icon">☰</p>
-          </MenuButton>
-          <transition
-            enter-active-class="transition duration-200 ease-out"
-            enter-from-class="transform scale-95 opacity-0"
-            enter-to-class="transform scale-100 opacity-100"
-            leave-active-class="transition duration-150 ease-in"
-            leave-from-class="transform scale-100 opacity-100"
-            leave-to-class="transform scale-95 opacity-0"
-          >
-            <MenuItems class="dropdown-menu">
-              <MenuItem>
-                <a href="/stream" class="dropdown-item">Stream</a>
-              </MenuItem>
-  
-              <MenuItem v-if="isAdmin">
-                <a href="/system-settings" class="dropdown-item">System Settings</a>
-              </MenuItem>
-              <MenuItem v-if="isAdmin">
-                <a href="/manage-livestream" class="dropdown-item">Manage Livestreams</a>
-              </MenuItem>
-              <MenuItem v-if="isAdmin">
-                <a href="/manage-accounts" class="dropdown-item">Manage Accounts</a>
-              </MenuItem>
-              <MenuItem v-if="isNative">
-                <a href="/account" class="dropdown-item">Account</a>
-              </MenuItem>
-              <MenuItem>
-                <a href="#" @click="logout" class="dropdown-item">Logout</a>
-              </MenuItem>
-            </MenuItems>
-          </transition>
-        </Menu>
+        <div class="right-nav">
+          <LanguageSwitcher />
+          <Menu as="div" class="relative">
+            <MenuButton class="dropdown-button">
+              <p class="icon">☰</p>
+            </MenuButton>
+            <transition
+              enter-active-class="transition duration-200 ease-out"
+              enter-from-class="transform scale-95 opacity-0"
+              enter-to-class="transform scale-100 opacity-100"
+              leave-active-class="transition duration-150 ease-in"
+              leave-from-class="transform scale-100 opacity-100"
+              leave-to-class="transform scale-95 opacity-0"
+            >
+              <MenuItems class="dropdown-menu">
+                <MenuItem>
+                  <a href="/stream" class="dropdown-item">{{ $t('navigation.stream') }}</a>
+                </MenuItem>
+    
+                <MenuItem v-if="isAdmin">
+                  <a href="/system-settings" class="dropdown-item">{{ $t('navigation.system_settings') }}</a>
+                </MenuItem>
+                <MenuItem v-if="isAdmin">
+                  <a href="/manage-livestream" class="dropdown-item">{{ $t('navigation.manage_livestreams') }}</a>
+                </MenuItem>
+                <MenuItem v-if="isAdmin">
+                  <a href="/manage-accounts" class="dropdown-item">{{ $t('navigation.manage_accounts') }}</a>
+                </MenuItem>
+                <MenuItem v-if="isNative">
+                  <a href="/account" class="dropdown-item">{{ $t('navigation.account') }}</a>
+                </MenuItem>
+                <MenuItem>
+                  <a href="#" @click="logout" class="dropdown-item">{{ $t('navigation.logout') }}</a>
+                </MenuItem>
+              </MenuItems>
+            </transition>
+          </Menu>
+        </div>
       </nav>
     </header>
     <NuxtPage />
@@ -48,13 +51,15 @@
 
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
+import LanguageSwitcher from '~/components/LanguageSwitcher.vue';
 
 export default {
   components: {
     Menu,
     MenuButton,
     MenuItems,
-    MenuItem
+    MenuItem,
+    LanguageSwitcher
   },
   data() {
     return {
@@ -172,5 +177,11 @@ nav ul li a:hover {
     right: 10px; /* Adjust position for smaller screens */
     width: 90vw; /* Make the dropdown wider on small screens */
   }
+}
+
+.right-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 </style>

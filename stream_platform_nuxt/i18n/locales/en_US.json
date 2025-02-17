@@ -1,0 +1,112 @@
+{
+  "navigation": {
+    "stream": "Stream",
+    "system_settings": "System Settings",
+    "manage_livestreams": "Manage Livestreams",
+    "manage_accounts": "Manage Accounts",
+    "account": "Account",
+    "logout": "Logout"
+  },
+  "account": {
+    "change_password": "Change Password",
+    "old_password": "Old Password:",
+    "new_password": "New Password:",
+    "submit": "Change Password",
+    "success": "Password changed successfully.",
+    "error": "Failed to change password"
+  },
+  "login": {
+    "title": "Login with Discord",
+    "discord_button": "Login with Discord",
+    "native_login": "Native Account Login"
+  },
+  "native_login": {
+    "title": "Native Account Login",
+    "username": "Username",
+    "password": "Password",
+    "login_button": "Login",
+    "success": "Login successful!",
+    "error": {
+      "invalid_response": "Login failed: Invalid response from server",
+      "unexpected": "An unexpected error occurred"
+    }
+  },
+  "manage_accounts": {
+    "title": "Manage Accounts",
+    "username": "Username:",
+    "role": "Role:",
+    "create_button": "Create Account",
+    "account_created": "Account Created:",
+    "password": "Password:",
+    "account_list": "Account List:",
+    "delete_button": "Delete Account",
+    "success": {
+      "create": "Account created successfully.",
+      "delete": "Account deleted successfully."
+    },
+    "error": {
+      "create": "Failed to create account",
+      "delete": "Failed to delete account",
+      "fetch": "Failed to fetch account list"
+    },
+    "roles": {
+      "moderator": "Moderator",
+      "user": "User",
+      "unknown": "Unknown Role"
+    }
+  },
+  "manage_livestream": {
+    "title": "Manage Livestream",
+    "name": "Name:",
+    "title_field": "Title:",
+    "information": "Information:",
+    "visibility": "Visibility:",
+    "stream_push_url": "Stream Push URL:",
+    "ban_list": "Ban List:",
+    "mute_list": "Mute List:",
+    "record_stream": "Record Stream:",
+    "download_recording": "Download Recording",
+    "create": "Create",
+    "delete": "Delete",
+    "success": {
+      "create": "Livestream created successfully.",
+      "delete": "Your livestream has been deleted."
+    },
+    "confirm_delete": {
+      "title": "Are you sure?",
+      "text": "This will delete the livestream and all associated recordings. This action cannot be undone!",
+      "confirm_button": "Yes, delete it!",
+      "cancel_button": "Cancel"
+    }
+  },
+  "not_allowed": {
+    "title": "Access Denied",
+    "message": "You are not allowed to watch this stream."
+  },
+  "stream": {
+    "viewers": "Viewers",
+    "chat": {
+      "placeholder": "Type your message...",
+      "send": "Send",
+      "delete": "Delete",
+      "mute": "Mute",
+      "not_allowed": "You are not allowed to send messages in this chat. You may be muted or banned.",
+      "message_deleted": "Message deleted successfully.",
+      "delete_failed": "Failed to delete message",
+      "user_muted": "User muted successfully.",
+      "mute_failed": "Failed to mute user"
+    }
+  },
+  "system_settings": {
+    "title": "System Settings",
+    "moderator_role_id": "Moderator Role ID:",
+    "stream_access_role_ids": "Stream Access Role IDs:",
+    "save_button": "Save",
+    "success": "System Settings saved successfully.",
+    "error": {
+      "save": "Failed to save settings",
+      "fetch": "Failed to fetch settings",
+      "general": "Error saving settings: {message}"
+    }
+  }
+}
