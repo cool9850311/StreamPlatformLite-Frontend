@@ -213,7 +213,7 @@ export default {
           });
           if (!response.ok) {
             const errorData = await response.json();
-            this.$refs.notification.showNotification(errorData.message || 'Failed to delete livestream', 'error');
+            this.$refs.notification.showNotification(errorData.message || this.$t('manage_livestream.error.delete'), 'error');
           } else {
             this.livestream = {
               uuid: '',
@@ -234,7 +234,7 @@ export default {
             );
           }
         } catch (error) {
-          this.$refs.notification.showNotification('Error deleting livestream: ' + error.message, 'error');
+          this.$refs.notification.showNotification(this.$t('manage_livestream.error.delete') + ': ' + error.message, 'error');
         }
       }
     },
@@ -260,8 +260,8 @@ export default {
             if (!processingAlertShown) {  // Only show alert if not already shown
               processingAlertShown = true;
               nuxtApp.$swal.fire({
-                title: 'Processing Recording',
-                text: 'Please wait while your recording is being processed...',
+                title: this.$t('manage_livestream.processing_recording.title'),
+                text: this.$t('manage_livestream.processing_recording.text'),
                 icon: 'info',
                 allowOutsideClick: false,
                 showConfirmButton: false

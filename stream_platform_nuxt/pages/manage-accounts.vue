@@ -39,6 +39,7 @@
 </template>
 
 <script>
+import { useNuxtApp } from '#app';
 import Notification from '@/components/notification.vue';
 
 export default {
@@ -131,28 +132,49 @@ export default {
       }
     },
     async deleteAccount() {
-      const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const nuxtApp = useNuxtApp();
+      
+      // Show confirmation dialog
+      const result = await nuxtApp.$swal.fire({
+        title: this.$t('manage_accounts.confirm_delete.title'),
+        text: this.$t('manage_accounts.confirm_delete.text'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: this.$t('manage_accounts.confirm_delete.confirm_button'),
+        cancelButtonText: this.$t('manage_accounts.confirm_delete.cancel_button')
+      });
 
-      try {
-        const response = await fetch(`${backendUrl}/origin-account/delete`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({ username: this.selectedAccount })
-        });
-        if (response.ok) {
-          this.$refs.notification.showNotification('Account deleted successfully.', 'success');
-          this.selectedAccount = '';
-          this.fetchAccountList();
-        } else {
-          const errorData = await response.json();
-          this.$refs.notification.showNotification(errorData.message || 'Failed to delete account', 'error');
+      // If user confirms deletion
+      if (result.isConfirmed) {
+        const runtimeConfig = useRuntimeConfig();
+        const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+        try {
+          const response = await fetch(`${backendUrl}/origin-account/delete`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ username: this.selectedAccount })
+          });
+          if (response.ok) {
+            this.selectedAccount = '';
+            this.fetchAccountList();
+            nuxtApp.$swal.fire(
+              'Deleted!',
+              this.$t('manage_accounts.success.delete'),
+              'success'
+            );
+          } else {
+            const errorData = await response.json();
+            this.$refs.notification.showNotification(errorData.message || this.$t('manage_accounts.error.delete'), 'error');
+          }
+        } catch (error) {
+          this.$refs.notification.showNotification(this.$t('manage_accounts.error.delete') + ': ' + error.message, 'error');
         }
-      } catch (error) {
-        this.$refs.notification.showNotification('Error deleting account: ' + error.message, 'error');
       }
     },
     getRoleKey(roleValue) {

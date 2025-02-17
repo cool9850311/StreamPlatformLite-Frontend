@@ -53,6 +53,12 @@
       "moderator": "モデレーター",
       "user": "ユーザー",
       "unknown": "不明な役割"
+    },
+    "confirm_delete": {
+      "title": "削除してもよろしいですか？",
+      "text": "このアカウントが削除されます。この操作は元に戻せません！",
+      "confirm_button": "はい、削除します！",
+      "cancel_button": "キャンセル"
     }
   },
   "manage_livestream": {
@@ -77,6 +83,17 @@
       "text": "ライブ配信とすべての関連する録画が削除されます。この操作は取り消せません！",
       "confirm_button": "はい、削除します！",
       "cancel_button": "キャンセル"
+    },
+    "error": {
+      "fetch_initial": "初期配信データの取得に失敗しました",
+      "fetch_data": "配信データの取得に失敗しました",
+      "create": "配信の作成に失敗しました",
+      "delete": "配信の削除に失敗しました",
+      "download": "録画のダウンロード中にエラーが発生しました"
+    },
+    "processing_recording": {
+      "title": "録画処理中",
+      "text": "録画の処理中です。しばらくお待ちください..."
     }
   },
   "not_allowed": {
@@ -94,7 +111,13 @@
       "message_deleted": "メッセージが正常に削除されました。",
       "delete_failed": "メッセージの削除に失敗しました",
       "user_muted": "ユーザーが正常にミュートされました。",
-      "mute_failed": "ユーザーのミュートに失敗しました"
+      "mute_failed": "ユーザーのミュートに失敗しました",
+      "confirm_mute": {
+        "title": "ユーザーのミュート確認",
+        "text": "{username} をミュートしてもよろしいですか？",
+        "confirm_button": "はい、ミュートします！",
+        "cancel_button": "キャンセル"
+      }
     }
   },
   "system_settings": {
