@@ -8,7 +8,7 @@
         <div class="stream-details">
           <div class="stream-header">
             <h2>{{ streamTitle }}</h2>
-            <p class="view-count">Viewers: {{ viewCount }}</p>
+            <p class="view-count">{{ $t('stream.viewers') }}: {{ viewCount }}</p>
           </div>
           <p v-html="formattedStreamDescription" class="stream-description"></p>
         </div>
@@ -35,15 +35,20 @@
         </div>
         <!-- Chat input and send button -->
         <div class="chat-input">
-          <input v-model="newMessage" maxlength="100" placeholder="Type your message..." @keyup.enter="sendMessage" />
-          <button @click="sendMessage">Send</button>
+          <input 
+            v-model="newMessage" 
+            maxlength="100" 
+            :placeholder="$t('stream.chat.placeholder')" 
+            @keyup.enter="sendMessage" 
+          />
+          <button @click="sendMessage">{{ $t('stream.chat.send') }}</button>
         </div>
       </div>
     </main>
     <!-- Context menu for message options -->
     <div v-if="showContextMenu" class="context-menu" :style="{ top: contextMenuY + 'px', left: contextMenuX + 'px' }">
-      <button @click="deleteMessage(selectedMessage)">Delete</button>
-      <button @click="muteUser(selectedMessage)">Mute</button>
+      <button @click="deleteMessage(selectedMessage)">{{ $t('stream.chat.delete') }}</button>
+      <button @click="muteUser(selectedMessage)">{{ $t('stream.chat.mute') }}</button>
     </div>
     <!-- Use the Notification Component -->
     <Notification ref="notification" />
@@ -56,6 +61,9 @@ import Hls from 'hls.js';
 import axios from 'axios';
 import { computed } from 'vue';
 import Notification from '~/components/notification.vue'; // Import the Notification component
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const streamData = ref({});
 const streamTitle = ref('Stream Title');
@@ -101,7 +109,7 @@ const sendMessage = async () => {
   } catch (error) {
     if (error.response && error.response.status === 403) {
       console.error('You are not allowed to send messages in this chat.');
-      notification.value.showNotification('You are not allowed to send messages in this chat. You may be muted or banned.', 'error');
+      notification.value.showNotification($t('stream.chat.not_allowed'), 'error');
     }
     console.error('Error sending message:', error);
   }
@@ -142,13 +150,13 @@ const deleteMessage = async (message) => {
     if (response.status === 200) {
       messages.value = messages.value.filter(m => m.id !== message.id);
       showContextMenu.value = false;
-      notification.value.showNotification('Message deleted successfully.', 'success');
+      notification.value.showNotification($t('stream.chat.message_deleted'), 'success');
     } else {
-      notification.value.showNotification('Failed to delete message', 'error');
+      notification.value.showNotification($t('stream.chat.delete_failed'), 'error');
     }
   } catch (error) {
     console.error('Error deleting message:', error);
-    notification.value.showNotification('Failed to delete message', 'error');
+    notification.value.showNotification($t('stream.chat.delete_failed'), 'error');
   }
 };
 
@@ -169,13 +177,13 @@ const muteUser = async (message) => {
 
     if (response.status === 200) {
       showContextMenu.value = false;
-      notification.value.showNotification('User muted successfully.', 'success');
+      notification.value.showNotification($t('stream.chat.user_muted'), 'success');
     } else {
-      notification.value.showNotification('Failed to mute user', 'error');
+      notification.value.showNotification($t('stream.chat.mute_failed'), 'error');
     }
   } catch (error) {
     console.error('Error muting user:', error);
-    notification.value.showNotification('Failed to mute user', 'error');
+    notification.value.showNotification($t('stream.chat.mute_failed'), 'error');
   }
 };
 

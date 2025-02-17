@@ -1,47 +1,47 @@
 <template>
   <div v-if="hasAccess" class="livestream-container">
-    <h1>Manage Livestream</h1>
+    <h1>{{ $t('manage_livestream.title') }}</h1>
     <form @submit.prevent="isLivestreamExist ? deleteLivestream() : createLivestream()" class="livestream-form">
       <div class="form-group">
-        <label for="name">Name:</label>
+        <label for="name">{{ $t('manage_livestream.name') }}</label>
         <input v-model="livestream.name" id="name" type="text" class="form-control" :disabled="isLivestreamExist" />
       </div>
       <div class="form-group">
-        <label for="title">Title:</label>
+        <label for="title">{{ $t('manage_livestream.title_field') }}</label>
         <input v-model="livestream.title" id="title" type="text" class="form-control" :disabled="isLivestreamExist" />
       </div>
       <div class="form-group">
-        <label for="information">Information:</label>
+        <label for="information">{{ $t('manage_livestream.information') }}</label>
         <textarea v-model="livestream.information" id="information" class="form-control" :disabled="isLivestreamExist"></textarea>
       </div>
       <div class="form-group">
-        <label for="visibility">Visibility:</label>
+        <label for="visibility">{{ $t('manage_livestream.visibility') }}</label>
         <input v-model="livestream.visibility" id="visibility" type="text" class="form-control" :disabled=true />
       </div>
       <div class="form-group">
-        <label for="streamPushURL">Stream Push URL:</label>
+        <label for="streamPushURL">{{ $t('manage_livestream.stream_push_url') }}</label>
         <input v-model="livestream.streamPushURL" id="streamPushURL" type="text" class="form-control" :disabled=true />
       </div>
       <div class="form-group">
-        <label for="banList">Ban List:</label>
+        <label for="banList">{{ $t('manage_livestream.ban_list') }}</label>
         <textarea v-model="banListString" id="banList" class="form-control" :disabled=true></textarea>
       </div>
       <div class="form-group">
-        <label for="muteList">Mute List:</label>
+        <label for="muteList">{{ $t('manage_livestream.mute_list') }}</label>
         <textarea v-model="muteListString" id="muteList" class="form-control" :disabled=true></textarea>
       </div>
       <div class="form-group">
-        <label for="is_record">Record Stream:</label><br>
+        <label for="is_record">{{ $t('manage_livestream.record_stream') }}</label><br>
         <label class="switch">
           <input v-model="livestream.is_record" id="is_record" type="checkbox" :disabled="isLivestreamExist">
           <span class="slider round"></span>
         </label>
       </div>
       <div v-if="isLivestreamExist && livestream.is_record" class="form-group">
-        <button type="button" @click="downloadRecording" class="btn btn-success">Download Recording</button>
+        <button type="button" @click="downloadRecording" class="btn btn-success">{{ $t('manage_livestream.download_recording') }}</button>
       </div>
-      <button v-if="!isLivestreamExist" type="submit" class="btn btn-primary">Create</button>
-      <button v-if="isLivestreamExist" type="button" @click="deleteLivestream" class="btn btn-danger">Delete</button>
+      <button v-if="!isLivestreamExist" type="submit" class="btn btn-primary">{{ $t('manage_livestream.create') }}</button>
+      <button v-if="isLivestreamExist" type="button" @click="deleteLivestream" class="btn btn-danger">{{ $t('manage_livestream.delete') }}</button>
     </form>
   </div>
   <div v-else-if="isLivestreamExist">
@@ -178,7 +178,7 @@ export default {
           const token = localStorage.getItem('token');
           const decodedToken = this.decodeJWT(token);
           this.fetchLivestream(decodedToken.UserID);
-          this.$refs.notification.showNotification('Livestream created successfully.', 'success');
+          this.$refs.notification.showNotification(this.$t('manage_livestream.success.create'), 'success');
         }
       } catch (error) {
         this.$refs.notification.showNotification('Error creating livestream: ' + error.message, 'error');
@@ -189,14 +189,14 @@ export default {
       
       // Show confirmation dialog
       const result = await nuxtApp.$swal.fire({
-        title: 'Are you sure?',
-        text: "This will delete the livestream and all associated recordings. This action cannot be undone!",
+        title: this.$t('manage_livestream.confirm_delete.title'),
+        text: this.$t('manage_livestream.confirm_delete.text'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
+        confirmButtonText: this.$t('manage_livestream.confirm_delete.confirm_button'),
+        cancelButtonText: this.$t('manage_livestream.confirm_delete.cancel_button')
       });
 
       // If user confirms deletion
@@ -229,7 +229,7 @@ export default {
             this.isLivestreamExist = false;
             nuxtApp.$swal.fire(
               'Deleted!',
-              'Your livestream has been deleted.',
+              this.$t('manage_livestream.success.delete'),
               'success'
             );
           }

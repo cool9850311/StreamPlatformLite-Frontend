@@ -1,0 +1,112 @@
+{
+  "navigation": {
+    "stream": "直播",
+    "system_settings": "系統設定",
+    "manage_livestreams": "管理直播",
+    "manage_accounts": "管理帳號",
+    "account": "帳號",
+    "logout": "登出"
+  },
+  "account": {
+    "change_password": "更改密碼",
+    "old_password": "舊密碼：",
+    "new_password": "新密碼：",
+    "submit": "更改密碼",
+    "success": "密碼更改成功。",
+    "error": "密碼更改失敗"
+  },
+  "login": {
+    "title": "使用 Discord 登入",
+    "discord_button": "使用 Discord 登入",
+    "native_login": "本地帳號登入"
+  },
+  "native_login": {
+    "title": "本地帳號登入",
+    "username": "使用者名稱",
+    "password": "密碼",
+    "login_button": "登入",
+    "success": "登入成功！",
+    "error": {
+      "invalid_response": "登入失敗：伺服器回應無效",
+      "unexpected": "發生意外錯誤"
+    }
+  },
+  "manage_accounts": {
+    "title": "管理帳號",
+    "username": "使用者名稱：",
+    "role": "角色：",
+    "create_button": "建立帳號",
+    "account_created": "帳號已建立：",
+    "password": "密碼：",
+    "account_list": "帳號列表：",
+    "delete_button": "刪除帳號",
+    "success": {
+      "create": "帳號建立成功。",
+      "delete": "帳號刪除成功。"
+    },
+    "error": {
+      "create": "建立帳號失敗",
+      "delete": "刪除帳號失敗",
+      "fetch": "取得帳號列表失敗"
+    },
+    "roles": {
+      "moderator": "管理員",
+      "user": "使用者",
+      "unknown": "未知角色"
+    }
+  },
+  "manage_livestream": {
+    "title": "管理直播",
+    "name": "名稱：",
+    "title_field": "標題：",
+    "information": "資訊：",
+    "visibility": "可見度：",
+    "stream_push_url": "串流推送網址：",
+    "ban_list": "封鎖清單：",
+    "mute_list": "靜音清單：",
+    "record_stream": "錄製串流：",
+    "download_recording": "下載錄影",
+    "create": "建立",
+    "delete": "刪除",
+    "success": {
+      "create": "直播建立成功。",
+      "delete": "您的直播已被刪除。"
+    },
+    "confirm_delete": {
+      "title": "確定要刪除嗎？",
+      "text": "這將刪除直播和所有相關錄影。此操作無法復原！",
+      "confirm_button": "是的，刪除！",
+      "cancel_button": "取消"
+    }
+  },
+  "not_allowed": {
+    "title": "拒絕存取",
+    "message": "您沒有權限觀看此直播。"
+  },
+  "stream": {
+    "viewers": "觀眾人數",
+    "chat": {
+      "placeholder": "輸入訊息...",
+      "send": "發送",
+      "delete": "刪除",
+      "mute": "禁言",
+      "not_allowed": "您無法在此聊天室發送訊息。您可能被禁言或封鎖。",
+      "message_deleted": "訊息已成功刪除。",
+      "delete_failed": "刪除訊息失敗",
+      "user_muted": "用戶已成功被禁言。",
+      "mute_failed": "禁言用戶失敗"
+    }
+  },
+  "system_settings": {
+    "title": "系統設定",
+    "moderator_role_id": "管理員角色 ID：",
+    "stream_access_role_ids": "串流存取角色 ID：",
+    "save_button": "儲存",
+    "success": "系統設定儲存成功。",
+    "error": {
+      "save": "儲存設定失敗",
+      "fetch": "取得設定失敗",
+      "general": "儲存設定時發生錯誤：{message}"
+    }
+  }
+}

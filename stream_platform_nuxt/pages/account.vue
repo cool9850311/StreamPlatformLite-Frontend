@@ -1,17 +1,17 @@
 <template>
   <!-- ... existing code ... -->
   <div v-if="hasAccess" class="change-password-container">
-    <h2>Change Password</h2>
+    <h2>{{ $t('account.change_password') }}</h2>
     <form @submit.prevent="changePassword" class="change-password-form">
       <div class="form-group">
-        <label for="old_password">Old Password:</label>
+        <label for="old_password">{{ $t('account.old_password') }}</label>
         <input v-model="changePasswordRequest.old_password" id="old_password" type="password" class="form-control" />
       </div>
       <div class="form-group">
-        <label for="newPassword">New Password:</label>
+        <label for="newPassword">{{ $t('account.new_password') }}</label>
         <input v-model="changePasswordRequest.new_password" id="new_password" type="password" class="form-control" />
       </div>
-      <button type="submit" class="btn btn-primary">Change Password</button>
+      <button type="submit" class="btn btn-primary">{{ $t('account.submit') }}</button>
     </form>
     <!-- Use Notification Component -->
     <Notification ref="notificationRef" />
@@ -71,13 +71,13 @@ export default {
           body: JSON.stringify(this.changePasswordRequest)
         });
         if (response.ok) {
-          this.$refs.notificationRef.showNotification('Password changed successfully.', 'success');
+          this.$refs.notificationRef.showNotification(this.$t('account.success'), 'success');
         } else {
           const errorData = await response.json();
-          this.$refs.notificationRef.showNotification(errorData.message || 'Failed to change password', 'error');
+          this.$refs.notificationRef.showNotification(errorData.message || this.$t('account.error'), 'error');
         }
       } catch (error) {
-        this.$refs.notificationRef.showNotification('Error changing password: ' + error.message, 'error');
+        this.$refs.notificationRef.showNotification(this.$t('account.error') + ': ' + error.message, 'error');
       }
     }
   }

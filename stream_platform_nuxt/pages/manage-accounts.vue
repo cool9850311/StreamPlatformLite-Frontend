@@ -1,35 +1,37 @@
 <template>
   <div v-if="hasAccess" class="settings-container">
-    <h1>Manage Accounts</h1>
+    <h1>{{ $t('manage_accounts.title') }}</h1>
     <form @submit.prevent="createAccount" class="settings-form">
       <div class="form-group">
-        <label for="username">Username:</label>
+        <label for="username">{{ $t('manage_accounts.username') }}</label>
         <input v-model="newAccount.username" id="username" type="text" class="form-control" />
       </div>
       <div class="form-group">
-        <label for="role">Role:</label>
+        <label for="role">{{ $t('manage_accounts.role') }}</label>
         <select v-model="newAccount.role" id="role" class="form-control">
-          <option v-for="role in roles" :key="role.value" :value="role.value">{{ role.label }}</option>
+          <option v-for="role in roles" :key="role.value" :value="role.value">
+            {{ $t(`manage_accounts.roles.${role.key}`) }}
+          </option>
         </select>
       </div>
-      <button type="submit" class="btn btn-primary">Create Account</button>
+      <button type="submit" class="btn btn-primary">{{ $t('manage_accounts.create_button') }}</button>
     </form>
     <div v-if="accountInfo" class="result">
-      <h3>Account Created:</h3>
-      <p>Username: {{ accountInfo.username }}</p>
-      <p>Password: {{ accountInfo.password }}</p>
-      <p>Role: {{ getRoleLabel(accountInfo.role) }}</p>
+      <h3>{{ $t('manage_accounts.account_created') }}</h3>
+      <p>{{ $t('manage_accounts.username') }} {{ accountInfo.username }}</p>
+      <p>{{ $t('manage_accounts.password') }} {{ accountInfo.password }}</p>
+      <p>{{ $t('manage_accounts.role') }} {{ $t(`manage_accounts.roles.${getRoleKey(accountInfo.role)}`) }}</p>
     </div>
     <hr class="section-divider" />
     <div class="form-group">
-      <label for="accountList">Account List:</label>
+      <label for="accountList">{{ $t('manage_accounts.account_list') }}</label>
       <select v-model="selectedAccount" id="accountList" class="form-control">
         <option v-for="account in accountList" :key="account.username" :value="account.username">
-          {{ account.username }} - {{ getRoleLabel(account.role) }}
+          {{ account.username }} - {{ $t(`manage_accounts.roles.${getRoleKey(account.role)}`) }}
         </option>
       </select>
     </div>
-    <button @click="deleteAccount" class="btn btn-danger">Delete Account</button>
+    <button @click="deleteAccount" class="btn btn-danger">{{ $t('manage_accounts.delete_button') }}</button>
 
     <!-- Use Notification Component -->
     <notification ref="notification"></notification>
@@ -50,8 +52,8 @@ export default {
         role: ''
       },
       roles: [
-        { value: 2, label: 'Moderator' },
-        { value: 3, label: 'User' },
+        { value: 2, key: 'moderator' },
+        { value: 3, key: 'user' },
         // Add more roles as needed
       ],
       accountInfo: null,
@@ -153,9 +155,9 @@ export default {
         this.$refs.notification.showNotification('Error deleting account: ' + error.message, 'error');
       }
     },
-    getRoleLabel(roleValue) {
+    getRoleKey(roleValue) {
       const role = this.roles.find(r => r.value === roleValue);
-      return role ? role.label : 'Unknown Role';
+      return role ? role.key : 'unknown';
     }
   }
 };

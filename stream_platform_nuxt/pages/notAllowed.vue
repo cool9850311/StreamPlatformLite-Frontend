@@ -1,7 +1,7 @@
 <template>
   <div class="not-allowed">
-    <h1>Access Denied</h1>
-    <p>You are not allowed to watch this stream.</p>
+    <h1>{{ $t('not_allowed.title') }}</h1>
+    <p>{{ $t('not_allowed.message') }}</p>
   </div>
 </template>
 

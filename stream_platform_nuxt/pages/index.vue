@@ -1,14 +1,18 @@
 <template>
   <div class="login-page">
-    <h1>Login with Discord</h1>
-    <a :href="discordOAuthUrl" class="login-button">Login with Discord</a>
-    <a href="/native-login" class="native-login-link">Native Account Login</a>
+    <div class="language-switcher-container">
+      <LanguageSwitcher />
+    </div>
+    <h1>{{ $t('login.title') }}</h1>
+    <a :href="discordOAuthUrl" class="login-button">{{ $t('login.discord_button') }}</a>
+    <a href="/native-login" class="native-login-link">{{ $t('login.native_login') }}</a>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
+import LanguageSwitcher from '~/components/LanguageSwitcher.vue';
 
 const router = useRouter();
 const runtimeConfig = useRuntimeConfig()
@@ -46,6 +50,13 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   height: 100vh;
+  position: relative;
+}
+
+.language-switcher-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
 }
 
 .login-button {
