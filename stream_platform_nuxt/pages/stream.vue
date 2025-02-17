@@ -161,29 +161,46 @@ const deleteMessage = async (message) => {
 };
 
 const muteUser = async (message) => {
-  try {
-    const token = localStorage.getItem('token');
-    const runtimeConfig = useRuntimeConfig();
-    const backendUrl = runtimeConfig.public.BACKEND_URL;
+  const nuxtApp = useNuxtApp();
+  
+  // Show confirmation dialog
+  const result = await nuxtApp.$swal.fire({
+    title: $t('stream.chat.confirm_mute.title'),
+    text: $t('stream.chat.confirm_mute.text', { username: message.username }),
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: $t('stream.chat.confirm_mute.confirm_button'),
+    cancelButtonText: $t('stream.chat.confirm_mute.cancel_button')
+  });
 
-    const response = await axios.post(`${backendUrl}/livestream/mute-user`, {
-      stream_uuid: streamData.value.uuid,
-      user_id: message.user_id
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`
+  // If user confirms mute
+  if (result.isConfirmed) {
+    try {
+      const token = localStorage.getItem('token');
+      const runtimeConfig = useRuntimeConfig();
+      const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+      const response = await axios.post(`${backendUrl}/livestream/mute-user`, {
+        stream_uuid: streamData.value.uuid,
+        user_id: message.user_id
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 200) {
+        showContextMenu.value = false;
+        notification.value.showNotification($t('stream.chat.user_muted'), 'success');
+      } else {
+        notification.value.showNotification($t('stream.chat.mute_failed'), 'error');
       }
-    });
-
-    if (response.status === 200) {
-      showContextMenu.value = false;
-      notification.value.showNotification($t('stream.chat.user_muted'), 'success');
-    } else {
+    } catch (error) {
+      console.error('Error muting user:', error);
       notification.value.showNotification($t('stream.chat.mute_failed'), 'error');
     }
-  } catch (error) {
-    console.error('Error muting user:', error);
-    notification.value.showNotification($t('stream.chat.mute_failed'), 'error');
   }
 };
 

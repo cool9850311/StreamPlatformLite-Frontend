@@ -53,6 +53,12 @@
       "moderator": "管理員",
       "user": "使用者",
       "unknown": "未知角色"
+    },
+    "confirm_delete": {
+      "title": "確定要刪除嗎？",
+      "text": "這將刪除該帳號。此操作無法復原！",
+      "confirm_button": "是的，刪除！",
+      "cancel_button": "取消"
     }
   },
   "manage_livestream": {
@@ -77,6 +83,17 @@
       "text": "這將刪除直播和所有相關錄影。此操作無法復原！",
       "confirm_button": "是的，刪除！",
       "cancel_button": "取消"
+    },
+    "error": {
+      "fetch_initial": "無法取得初始直播資料",
+      "fetch_data": "無法取得直播資料",
+      "create": "建立直播失敗",
+      "delete": "刪除直播失敗",
+      "download": "下載錄影時發生錯誤"
+    },
+    "processing_recording": {
+      "title": "處理錄影中",
+      "text": "請稍候，正在處理您的錄影..."
     }
   },
   "not_allowed": {
@@ -94,7 +111,13 @@
       "message_deleted": "訊息已成功刪除。",
       "delete_failed": "刪除訊息失敗",
       "user_muted": "用戶已成功被禁言。",
-      "mute_failed": "禁言用戶失敗"
+      "mute_failed": "禁言用戶失敗",
+      "confirm_mute": {
+        "title": "確認禁言使用者",
+        "text": "您確定要禁言 {username} 嗎？",
+        "confirm_button": "是的，禁言！",
+        "cancel_button": "取消"
+      }
     }
   },
   "system_settings": {

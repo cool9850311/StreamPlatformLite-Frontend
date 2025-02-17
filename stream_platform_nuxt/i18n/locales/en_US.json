@@ -53,6 +53,12 @@
       "moderator": "Moderator",
       "user": "User",
       "unknown": "Unknown Role"
+    },
+    "confirm_delete": {
+      "title": "Are you sure?",
+      "text": "This will delete the account. This action cannot be undone!",
+      "confirm_button": "Yes, delete it!",
+      "cancel_button": "Cancel"
     }
   },
   "manage_livestream": {
@@ -77,6 +83,17 @@
       "text": "This will delete the livestream and all associated recordings. This action cannot be undone!",
       "confirm_button": "Yes, delete it!",
       "cancel_button": "Cancel"
+    },
+    "error": {
+      "fetch_initial": "Failed to fetch initial livestream data",
+      "fetch_data": "Failed to fetch livestream data",
+      "create": "Failed to create livestream",
+      "delete": "Failed to delete livestream",
+      "download": "Error downloading recording"
+    },
+    "processing_recording": {
+      "title": "Processing Recording",
+      "text": "Please wait while your recording is being processed..."
     }
   },
   "not_allowed": {
@@ -94,7 +111,13 @@
       "message_deleted": "Message deleted successfully.",
       "delete_failed": "Failed to delete message",
       "user_muted": "User muted successfully.",
-      "mute_failed": "Failed to mute user"
+      "mute_failed": "Failed to mute user",
+      "confirm_mute": {
+        "title": "Confirm Mute User",
+        "text": "Are you sure you want to mute {username}?",
+        "confirm_button": "Yes, mute them!",
+        "cancel_button": "Cancel"
+      }
     }
   },
   "system_settings": {
