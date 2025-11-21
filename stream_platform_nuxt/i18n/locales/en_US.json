@@ -9,8 +9,10 @@
   },
   "account": {
     "change_password": "Change Password",
+    "subtitle": "Update your account password to protect your account security",
     "old_password": "Old Password:",
     "new_password": "New Password:",
+    "password_hint": "Password must be at least 8 characters",
     "submit": "Change Password",
     "success": "Password changed successfully.",
     "error": "Failed to change password"
@@ -18,17 +20,20 @@
   "login": {
     "title": "Login with Discord",
     "discord_button": "Login with Discord",
-    "native_login": "Native Account Login"
+    "native_login": "Native Account Login",
+    "or": "or"
   },
   "native_login": {
     "title": "Native Account Login",
     "username": "Username",
     "password": "Password",
     "login_button": "Login",
+    "back_to_home": "Back to Home",
     "success": "Login successful!",
     "error": {
       "invalid_response": "Login failed: Invalid response from server",
-      "unexpected": "An unexpected error occurred"
+      "unexpected": "An unexpected error occurred",
+      "failed": "Login failed"
     }
   },
   "manage_accounts": {
@@ -42,12 +47,15 @@
     "delete_button": "Delete Account",
     "success": {
       "create": "Account created successfully.",
-      "delete": "Account deleted successfully."
+      "delete": "Account deleted successfully.",
+      "deleted_title": "Deleted!"
     },
     "error": {
       "create": "Failed to create account",
+      "create_general": "Error creating account",
       "delete": "Failed to delete account",
-      "fetch": "Failed to fetch account list"
+      "fetch": "Failed to fetch account list",
+      "fetch_general": "Error fetching account list"
     },
     "roles": {
       "moderator": "Moderator",
@@ -63,6 +71,8 @@
   },
   "manage_livestream": {
     "title": "Manage Livestream",
+    "subtitle_create": "Create and configure your livestream settings",
+    "subtitle_manage": "Manage your livestream configuration and recordings",
     "name": "Name:",
     "title_field": "Title:",
     "information": "Information:",
@@ -71,12 +81,15 @@
     "ban_list": "Ban List:",
     "mute_list": "Mute List:",
     "record_stream": "Record Stream:",
+    "recording_enabled": "Recording Enabled",
+    "recording_disabled": "Recording Disabled",
     "download_recording": "Download Recording",
     "create": "Create",
     "delete": "Delete",
     "success": {
       "create": "Livestream created successfully.",
-      "delete": "Your livestream has been deleted."
+      "delete": "Your livestream has been deleted.",
+      "deleted_title": "Deleted!"
     },
     "confirm_delete": {
       "title": "Are you sure?",
@@ -88,6 +101,7 @@
       "fetch_initial": "Failed to fetch initial livestream data",
       "fetch_data": "Failed to fetch livestream data",
       "create": "Failed to create livestream",
+      "create_general": "Error creating livestream",
       "delete": "Failed to delete livestream",
       "download": "Error downloading recording",
       "auth_failed": "Authentication failed. Please login again."
@@ -103,7 +117,10 @@
   },
   "stream": {
     "viewers": "Viewers",
+    "show_more": "Show more",
+    "show_less": "Show less",
     "chat": {
+      "title": "Live Chat",
       "placeholder": "Type your message...",
       "send": "Send",
       "delete": "Delete",
@@ -125,6 +142,7 @@
     "title": "System Settings",
     "moderator_role_id": "Moderator Role ID:",
     "stream_access_role_ids": "Stream Access Role IDs:",
+    "role_ids_hint": "Enter one role ID per line",
     "save_button": "Save",
     "success": "System Settings saved successfully.",
     "error": {

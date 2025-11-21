@@ -9,8 +9,10 @@
   },
   "account": {
     "change_password": "パスワード変更",
+    "subtitle": "アカウントのセキュリティを保護するためにパスワードを更新してください",
     "old_password": "現在のパスワード：",
     "new_password": "新しいパスワード：",
+    "password_hint": "パスワードは少なくとも8文字必要です",
     "submit": "パスワードを変更",
     "success": "パスワードが正常に変更されました。",
     "error": "パスワードの変更に失敗しました"
@@ -18,17 +20,20 @@
   "login": {
     "title": "Discordでログイン",
     "discord_button": "Discordでログイン",
-    "native_login": "アカウントログイン"
+    "native_login": "アカウントログイン",
+    "or": "または"
   },
   "native_login": {
     "title": "ネイティブアカウントログイン",
     "username": "ユーザー名",
     "password": "パスワード",
     "login_button": "ログイン",
+    "back_to_home": "ホームに戻る",
     "success": "ログインに成功しました！",
     "error": {
       "invalid_response": "ログイン失敗：サーバーからの応答が無効です",
-      "unexpected": "予期せぬエラーが発生しました"
+      "unexpected": "予期せぬエラーが発生しました",
+      "failed": "ログインに失敗しました"
     }
   },
   "manage_accounts": {
@@ -42,12 +47,15 @@
     "delete_button": "アカウント削除",
     "success": {
       "create": "アカウントが正常に作成されました。",
-      "delete": "アカウントが正常に削除されました。"
+      "delete": "アカウントが正常に削除されました。",
+      "deleted_title": "削除しました！"
     },
     "error": {
       "create": "アカウントの作成に失敗しました",
+      "create_general": "アカウント作成中にエラーが発生しました",
       "delete": "アカウントの削除に失敗しました",
-      "fetch": "アカウント一覧の取得に失敗しました"
+      "fetch": "アカウント一覧の取得に失敗しました",
+      "fetch_general": "アカウント一覧取得中にエラーが発生しました"
     },
     "roles": {
       "moderator": "モデレーター",
@@ -63,6 +71,8 @@
   },
   "manage_livestream": {
     "title": "ライブ配信管理",
+    "subtitle_create": "ライブ配信設定を作成・構成",
+    "subtitle_manage": "ライブ配信設定と録画を管理",
     "name": "名前：",
     "title_field": "タイトル：",
     "information": "情報：",
@@ -71,12 +81,15 @@
     "ban_list": "禁止リスト：",
     "mute_list": "ミュートリスト：",
     "record_stream": "配信を録画：",
+    "recording_enabled": "録画が有効",
+    "recording_disabled": "録画が無効",
     "download_recording": "録画をダウンロード",
     "create": "作成",
     "delete": "削除",
     "success": {
       "create": "ライブ配信が正常に作成されました。",
-      "delete": "ライブ配信が削除されました。"
+      "delete": "ライブ配信が削除されました。",
+      "deleted_title": "削除しました！"
     },
     "confirm_delete": {
       "title": "本当によろしいですか？",
@@ -88,6 +101,7 @@
       "fetch_initial": "初期配信データの取得に失敗しました",
       "fetch_data": "配信データの取得に失敗しました",
       "create": "配信の作成に失敗しました",
+      "create_general": "配信作成中にエラーが発生しました",
       "delete": "配信の削除に失敗しました",
       "download": "録画のダウンロード中にエラーが発生しました",
       "auth_failed": "認証に失敗しました。再度ログインしてください。"
@@ -103,7 +117,10 @@
   },
   "stream": {
     "viewers": "視聴者数",
+    "show_more": "もっと見る",
+    "show_less": "閉じる",
     "chat": {
+      "title": "ライブチャット",
       "placeholder": "メッセージを入力...",
       "send": "送信",
       "delete": "削除",
@@ -125,6 +142,7 @@
     "title": "システム設定",
     "moderator_role_id": "モデレーター役割ID：",
     "stream_access_role_ids": "ストリームアクセス役割ID：",
+    "role_ids_hint": "1行に1つの役割IDを入力してください",
     "save_button": "保存",
     "success": "システム設定が正常に保存されました。",
     "error": {
