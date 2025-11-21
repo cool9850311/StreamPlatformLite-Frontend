@@ -65,6 +65,19 @@ export default {
   },
   async mounted() {
     try {
+      const runtimeConfig = useRuntimeConfig();
+      const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+      // Check admin status by calling system-settings endpoint
+      const response = await fetch(`${backendUrl}/system-settings`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        // User is not admin, redirect to stream page
+        return this.$router.push('/stream');
+      }
+
       this.hasAccess = true;
       await this.fetchAccountList();
     } catch (error) {
