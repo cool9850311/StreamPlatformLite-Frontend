@@ -89,7 +89,8 @@
       "fetch_data": "無法取得直播資料",
       "create": "建立直播失敗",
       "delete": "刪除直播失敗",
-      "download": "下載錄影時發生錯誤"
+      "download": "下載錄影時發生錯誤",
+      "auth_failed": "身份驗證失敗。請重新登入。"
     },
     "processing_recording": {
       "title": "處理錄影中",
