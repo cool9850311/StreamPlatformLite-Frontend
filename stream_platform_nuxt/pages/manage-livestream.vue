@@ -89,13 +89,13 @@ export default {
       const runtimeConfig = useRuntimeConfig();
       const backendUrl = runtimeConfig.public.BACKEND_URL;
 
-      // Check auth by trying to fetch livestream
-      const response = await fetch(`${backendUrl}/livestream/one`, {
+      // Check admin status by calling system-settings endpoint
+      const adminCheckResponse = await fetch(`${backendUrl}/system-settings`, {
         credentials: 'include'
       });
 
-      // Only redirect if unauthorized (401), not if livestream doesn't exist (404)
-      if (response.status === 401) {
+      if (!adminCheckResponse.ok) {
+        // User is not admin, redirect to stream page
         return this.$router.push('/stream');
       }
 

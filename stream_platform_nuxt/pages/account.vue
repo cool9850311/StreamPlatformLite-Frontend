@@ -39,16 +39,23 @@ export default {
     try {
       const runtimeConfig = useRuntimeConfig();
       const backendUrl = runtimeConfig.public.BACKEND_URL;
-      
-      // Try to access account endpoint to verify auth
-      const response = await fetch(`${backendUrl}/origin-account/list`, {
+
+      // Check if user is logged in with Origin (native) account
+      const response = await fetch(`${backendUrl}/me`, {
         credentials: 'include'
       });
-      
+
       if (!response.ok) {
         return this.$router.push('/stream');
       }
-      
+
+      const userData = await response.json();
+
+      // Only allow Origin account users to access this page
+      if (userData.identity_provider !== 'Origin') {
+        return this.$router.push('/stream');
+      }
+
       this.hasAccess = true;
     } catch (error) {
       this.$router.push('/stream');

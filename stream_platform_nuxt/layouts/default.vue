@@ -96,12 +96,12 @@ export default {
       this.isAdmin = false;
     }
 
-    // Check if native by trying to access account endpoint (only for native users)
+    // Check if native by checking identity provider
     try {
-      await axios.get(`${backendUrl}/origin-account/list`, {
+      const meResponse = await axios.get(`${backendUrl}/me`, {
         withCredentials: true
       });
-      this.isNative = true;
+      this.isNative = meResponse.data.identity_provider === 'Origin';
     } catch {
       this.isNative = false;
     }
