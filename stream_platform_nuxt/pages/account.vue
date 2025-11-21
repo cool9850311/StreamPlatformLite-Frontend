@@ -35,28 +35,26 @@ export default {
       hasAccess: false
     };
   },
-  mounted() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return this.$router.push('/stream');
+  async mounted() {
+    try {
+      const runtimeConfig = useRuntimeConfig();
+      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      
+      // Try to access account endpoint to verify auth
+      const response = await fetch(`${backendUrl}/origin-account/list`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        return this.$router.push('/stream');
+      }
+      
+      this.hasAccess = true;
+    } catch (error) {
+      this.$router.push('/stream');
     }
-
-    const decodedToken = this.decodeJWT(token);
-    if (decodedToken.IdentityProvider !== 'Origin') {
-      return this.$router.push('/stream');
-    }
-
-    this.hasAccess = true;
   },
   methods: {
-    decodeJWT(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    },
     async changePassword() {
       const runtimeConfig = useRuntimeConfig();
       const backendUrl = runtimeConfig.public.BACKEND_URL;
@@ -65,9 +63,9 @@ export default {
         const response = await fetch(`${backendUrl}/origin-account/change-password`, {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Content-Type': 'application/json'
           },
+          credentials: 'include',
           body: JSON.stringify(this.changePasswordRequest)
         });
         if (response.ok) {

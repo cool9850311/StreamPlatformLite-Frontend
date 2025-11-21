@@ -43,14 +43,15 @@ async function handleLogin() {
     const response = await axios.post(`${backendUrl}/origin-account/login`, {
       username: username.value,
       password: password.value
+    }, {
+      withCredentials: true // Enable cookies
     });
 
-    if (response.status === 200 && response.data.token) {
-      localStorage.setItem('token', response.data.token);
+    if (response.status === 200) {
       notification.value.showNotification(t('native_login.success'), 'success');
       router.push('/stream');
     } else {
-      console.error('Unexpected response or missing token:', response);
+      console.error('Unexpected response:', response);
       notification.value.showNotification(t('native_login.error.invalid_response'), 'error');
     }
   } catch (error) {

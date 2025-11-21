@@ -84,39 +84,37 @@ export default {
       isDownloading: false,
     };
   },
-  mounted() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return this.$router.push('/stream');
-    }
+  async mounted() {
+    try {
+      const runtimeConfig = useRuntimeConfig();
+      const backendUrl = runtimeConfig.public.BACKEND_URL;
 
-    const decodedToken = this.decodeJWT(token);
-    if (decodedToken.Role !== 0) {
-      return this.$router.push('/stream');
-    }
+      // Check auth by trying to fetch livestream
+      const response = await fetch(`${backendUrl}/livestream/one`, {
+        credentials: 'include'
+      });
 
-    this.hasAccess = true;
-    this.fetchLivestream(decodedToken.UserID);
+      // Only redirect if unauthorized (401), not if livestream doesn't exist (404)
+      if (response.status === 401) {
+        return this.$router.push('/stream');
+      }
+
+      this.hasAccess = true;
+      await this.fetchLivestream();
+    } catch (error) {
+      this.$router.push('/stream');
+    }
   },
   methods: {
-    decodeJWT(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    },
-    async fetchLivestream(userId) {
+
+    async fetchLivestream() {
       const runtimeConfig = useRuntimeConfig();
       const backendUrl = runtimeConfig.public.BACKEND_URL;
 
       try {
         // First request to get the UUID
         const initialResponse = await fetch(`${backendUrl}/livestream/one`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          credentials: 'include'
         });
 
         if (!initialResponse.ok) {
@@ -129,9 +127,7 @@ export default {
 
         // Second request to get full data using the UUID
         const response = await fetch(`${backendUrl}/livestream/${uuid}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          credentials: 'include'
         });
 
         if (response.ok) {
@@ -163,9 +159,9 @@ export default {
         const response = await fetch(`${backendUrl}/livestream`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Content-Type': 'application/json'
           },
+          credentials: 'include',
           body: JSON.stringify(livestreamData)
         });
         if (!response.ok) {
@@ -175,9 +171,7 @@ export default {
           const data = await response.json();
           this.livestream = data;
           this.isLivestreamExist = true;
-          const token = localStorage.getItem('token');
-          const decodedToken = this.decodeJWT(token);
-          this.fetchLivestream(decodedToken.UserID);
+          this.fetchLivestream();
           this.$refs.notification.showNotification(this.$t('manage_livestream.success.create'), 'success');
         }
       } catch (error) {
@@ -207,9 +201,7 @@ export default {
         try {
           const response = await fetch(`${backendUrl}/livestream/${this.livestream.uuid}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            credentials: 'include'
           });
           if (!response.ok) {
             const errorData = await response.json();
@@ -251,9 +243,7 @@ export default {
       const checkAndDownload = async () => {
         try {
           const response = await fetch(`${backendUrl}/livestream/record/${this.livestream.uuid}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            credentials: 'include'
           });
 
           if (response.status === 404) {
