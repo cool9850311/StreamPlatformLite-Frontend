@@ -246,6 +246,17 @@ export default {
             credentials: 'include'
           });
 
+          if (response.status === 401) {
+            nuxtApp.$swal.close();
+            this.$refs.notification.showNotification(this.$t('manage_livestream.error.auth_failed'), 'error');
+            if (this.downloadInterval) {
+              clearInterval(this.downloadInterval);
+              this.downloadInterval = null;
+            }
+            this.isDownloading = false;
+            return true;
+          }
+
           if (response.status === 404) {
             if (!processingAlertShown) {  // Only show alert if not already shown
               processingAlertShown = true;
@@ -287,6 +298,10 @@ export default {
             const a = document.createElement('a');
             a.href = url;
             a.download = filename;
+            // Add stopPropagation to fix Chrome download attribute being ignored
+            a.addEventListener('click', function(e) {
+              e.stopPropagation();
+            }, { once: true });
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);

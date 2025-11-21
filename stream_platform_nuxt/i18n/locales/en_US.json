@@ -89,7 +89,8 @@
       "fetch_data": "Failed to fetch livestream data",
       "create": "Failed to create livestream",
       "delete": "Failed to delete livestream",
-      "download": "Error downloading recording"
+      "download": "Error downloading recording",
+      "auth_failed": "Authentication failed. Please login again."
     },
     "processing_recording": {
       "title": "Processing Recording",
