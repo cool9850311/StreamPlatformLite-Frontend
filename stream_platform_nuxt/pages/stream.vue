@@ -3,29 +3,49 @@
     <main class="stream-content">
       <div class="stream-video">
         <!-- HLS.js video player -->
-        <video id="video" controls></video>
+        <div class="video-container">
+          <video id="video" controls></video>
+        </div>
         <!-- Stream details -->
         <div class="stream-details">
           <div class="stream-header">
-            <h2>{{ streamTitle }}</h2>
-            <p class="view-count">{{ $t('stream.viewers') }}: {{ viewCount }}</p>
+            <div class="stream-title-wrapper">
+              <h2 class="stream-title">{{ streamTitle }}</h2>
+            </div>
+            <div class="view-count-badge">
+              <span class="viewer-icon">👥</span>
+              <span class="viewer-count">{{ viewCount }}</span>
+              <span class="viewer-label">{{ $t('stream.viewers') }}</span>
+            </div>
           </div>
-          <p v-html="formattedStreamDescription" class="stream-description"></p>
+          <div class="description-wrapper">
+            <div v-html="formattedStreamDescription" class="stream-description" :class="{ 'expanded': isDescriptionExpanded }"></div>
+            <button v-if="streamDescription.length > 40" @click="toggleDescription" class="show-more-btn">
+              {{ isDescriptionExpanded ? $t('stream.show_less') : $t('stream.show_more') }}
+            </button>
+          </div>
         </div>
       </div>
       <div class="chatroom" ref="chatroom">
+        <!-- Chat header -->
+        <div class="chat-header">
+          <span class="chat-icon">💬</span>
+          <h3 class="chat-title">{{ $t('stream.chat.title') }}</h3>
+        </div>
         <!-- Dynamic chatroom -->
         <div class="messages">
           <ul>
             <li v-for="message in messages" :key="message.id" @click="showOptions(message, $event)" class="message-item">
-              <img 
-                :src="message.avatar ? `https://cdn.discordapp.com/avatars/${message.user_id}/${message.avatar}.png` : ''" 
-                alt="User Avatar" 
-                class="user-avatar" 
-                :class="{ 'empty-avatar': !message.avatar }" 
+              <img
+                :src="message.avatar ? `https://cdn.discordapp.com/avatars/${message.user_id}/${message.avatar}.png` : ''"
+                alt="User Avatar"
+                class="user-avatar"
+                :class="{ 'empty-avatar': !message.avatar }"
                 v-if="message.avatar"
               />
-              <div v-else class="user-avatar empty-avatar"></div>
+              <div v-else class="user-avatar empty-avatar">
+                <span class="avatar-placeholder">👤</span>
+              </div>
               <div class="message-content">
                 <div class="username">{{ message.username }}</div>
                 <div class="message">{{ message.message }}</div>
@@ -35,20 +55,30 @@
         </div>
         <!-- Chat input and send button -->
         <div class="chat-input">
-          <input 
-            v-model="newMessage" 
-            maxlength="100" 
-            :placeholder="$t('stream.chat.placeholder')" 
-            @keyup.enter="sendMessage" 
+          <input
+            v-model="newMessage"
+            maxlength="100"
+            :placeholder="$t('stream.chat.placeholder')"
+            @keyup.enter="sendMessage"
+            class="chat-input-field"
           />
-          <button @click="sendMessage">{{ $t('stream.chat.send') }}</button>
+          <button @click="sendMessage" class="send-button">
+            <span class="send-icon">📤</span>
+            <span class="send-text">{{ $t('stream.chat.send') }}</span>
+          </button>
         </div>
       </div>
     </main>
     <!-- Context menu for message options -->
     <div v-if="showContextMenu" class="context-menu" :style="{ top: contextMenuY + 'px', left: contextMenuX + 'px' }">
-      <button @click="deleteMessage(selectedMessage)">{{ $t('stream.chat.delete') }}</button>
-      <button @click="muteUser(selectedMessage)">{{ $t('stream.chat.mute') }}</button>
+      <button @click="deleteMessage(selectedMessage)" class="context-menu-item delete-item">
+        <span class="menu-icon">🗑️</span>
+        {{ $t('stream.chat.delete') }}
+      </button>
+      <button @click="muteUser(selectedMessage)" class="context-menu-item mute-item">
+        <span class="menu-icon">🔇</span>
+        {{ $t('stream.chat.mute') }}
+      </button>
     </div>
     <!-- Use the Notification Component -->
     <Notification ref="notification" />
@@ -79,7 +109,12 @@ const contextMenuX = ref(0);
 const contextMenuY = ref(0);
 const selectedMessage = ref(null);
 const notification = ref(null);
+const isDescriptionExpanded = ref(false);
 let retryInterval = null;
+
+const toggleDescription = () => {
+  isDescriptionExpanded.value = !isDescriptionExpanded.value;
+};
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -372,38 +407,16 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+* {
+  box-sizing: border-box;
+}
+
 .stream-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background-color: #f0f2f5;
-  font-family: 'Arial', sans-serif;
-}
-
-.stream-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #fff;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
-.user-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-}
-
-.stream-title {
-  flex-grow: 1;
-  text-align: center;
-}
-
-.view-count {
-  margin-left: 10px;
-  font-size: 0.9em;
-  color: #666;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  font-family: 'Arial', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .stream-content {
@@ -411,193 +424,617 @@ onUnmounted(() => {
   flex-direction: column;
   flex-grow: 1;
   padding: 20px;
+  gap: 20px;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Video Section */
+.stream-video {
+  background: white;
+  border-radius: 24px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
 
-.stream-video {
-  flex: 5;
-  padding: 10px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.video-container {
+  width: 100%;
+  background: #000;
+  border-radius: 24px 24px 0 0;
+  overflow: hidden;
+  position: relative;
 }
 
-.stream-video video {
+.video-container video {
   width: 100%;
   height: auto;
-  border-radius: 10px;
+  display: block;
 }
 
+.stream-details {
+  padding: 24px;
+}
+
+.stream-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e2e8f0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stream-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stream-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.view-count-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  padding: 8px 16px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.viewer-icon {
+  font-size: 18px;
+}
+
+.viewer-count {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.viewer-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.stream-description {
+  color: #475569;
+  line-height: 1.6;
+  font-size: 15px;
+  overflow-y: auto;
+  max-height: 6em;
+  padding-right: 8px;
+}
+
+.stream-description::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stream-description::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.stream-description::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.stream-description::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Chatroom Section */
 .chatroom {
   display: flex;
   flex-direction: column;
   flex: 2;
-  padding: 10px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-top: 0;
+  background: white;
+  border-radius: 24px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.chat-icon {
+  font-size: 24px;
+}
+
+.chat-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .messages {
   flex: 1;
   overflow-y: auto;
-  max-height: 80%;
+  padding: 16px 24px;
 }
 
-.chatroom ul {
+.messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.messages ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
 
-.chatroom li {
-  margin-bottom: 10px;
-  background-color: #e9ecef;
-  padding: 10px;
-  border-radius: 5px;
+.message-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 14px 16px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.message-item:nth-child(even) {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.message-item:hover {
+  transform: translateX(4px);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.empty-avatar {
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-placeholder {
+  font-size: 20px;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .username {
-  font-weight: bold;
-  margin-bottom: 5px;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 14px;
 }
 
 .message {
   word-wrap: break-word;
-  flex: 1;
+  overflow-wrap: break-word;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
+/* Chat Input */
 .chat-input {
   display: flex;
-  margin-top: 10px;
-  flex-shrink: 0;
-  max-height: 20%;
+  gap: 12px;
+  padding: 20px 24px;
+  background: #f8fafc;
+  border-top: 2px solid #e2e8f0;
 }
 
-.chat-input input {
-  flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px 0 0 5px;
+.chat-input-field {
+  flex: 1;
+  padding: 14px 16px;
+  font-size: 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  transition: all 0.3s ease;
+  outline: none;
+  font-family: inherit;
 }
 
-.chat-input button {
-  padding: 10px 20px;
-  border: none;
-  background-color: #007bff;
+.chat-input-field:focus {
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.chat-input-field::placeholder {
+  color: #94a3b8;
+}
+
+.send-button {
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
-  border-radius: 0 5px 5px 0;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.chat-input button:hover {
-  background-color: #0056b3;
+.send-icon {
+  font-size: 18px;
+  display: inline-block;
+  transition: transform 0.3s ease;
 }
 
+.send-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.send-button:hover .send-icon {
+  transform: scale(1.2);
+}
+
+.send-button:active {
+  transform: translateY(0);
+}
+
+/* Context Menu */
+.context-menu {
+  position: absolute;
+  background: white;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.15),
+    0 10px 10px -5px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  overflow: hidden;
+  min-width: 180px;
+  animation: menuFadeIn 0.2s ease-out;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.context-menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-icon {
+  font-size: 16px;
+}
+
+.context-menu-item:hover {
+  background: #f8fafc;
+}
+
+.delete-item:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.mute-item:hover {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+/* Responsive Design */
 @media (min-width: 768px) {
   .stream-content {
     flex-direction: row;
+    height: calc(100vh - 72px - 40px);
   }
 
   .stream-video {
-    flex: 3;
+    flex: 7;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
-  .stream-description {
-    overflow-y: scroll;
-    max-height: 5.5em;
+
+  .video-container {
+    border-radius: 24px 0 0 0;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .stream-details {
+    flex-shrink: 0;
   }
 
   .chatroom {
-    flex: 2;
-    margin-top: 0;
+    flex: 3;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    border-bottom-right-radius: 10px;
+    height: 100%;
+  }
+
+  .stream-description {
+    max-height: 5.5em;
+  }
+
+  .send-text {
+    display: inline;
+  }
+
+  .show-more-btn {
+    display: none;
+  }
+
+  .stream-description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: unset;
   }
 }
 
 @media (max-width: 767px) {
   .stream-content {
     flex-direction: column;
+    padding: 12px;
+    gap: 12px;
   }
 
   .stream-video {
-    flex: 4;
-    padding-bottom: 0;
+    flex: 0 0 auto;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    
   }
 
-  .stream-description {
-    max-height: 4.5em;
-    overflow-y: scroll;
+  .video-container {
+    border-radius: 24px 24px 0 0;
+    aspect-ratio: 16 / 9;
+  }
+
+  .video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   .chatroom {
-    flex: 6;
-    margin-top: 0;
-    padding-top: 0;
+    flex: 1;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
   }
 
   .stream-details {
+    padding: 20px 20px 8px 20px;
+  }
+
+  .stream-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+  }
+
+  .stream-title-wrapper {
+    width: 100%;
+  }
+
+  .stream-title {
+    font-size: 20px;
+  }
+
+  .view-count-badge {
+    align-self: flex-start;
+  }
+
+  .description-wrapper {
+    position: relative;
     margin-bottom: 0;
+  }
+
+  .stream-description {
+    max-height: 1.2em;
+    font-size: 13px;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    margin-bottom: 0;
+  }
+
+  .stream-description.expanded {
+    max-height: 100em;
+    -webkit-line-clamp: unset;
+  }
+
+  .show-more-btn {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 0 0 0;
+    margin-top: 2px;
+    margin-bottom: 0;
+    transition: color 0.2s ease;
+  }
+
+  .show-more-btn:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+
+  .chat-header {
+    padding: 16px 20px;
+  }
+
+  .chat-title {
+    font-size: 18px;
+  }
+
+  .messages {
+    padding: 12px 16px;
+  }
+
+  .chat-input {
+    padding: 16px;
+  }
+
+  .send-text {
+    display: none;
+  }
+
+  .send-button {
+    padding: 14px 18px;
+  }
+
+  .message-item {
+    padding: 12px;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .avatar-placeholder {
+    font-size: 18px;
   }
 }
 
-.context-menu {
-  position: absolute;
-  background-color: white;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-}
+@media (max-width: 480px) {
+  .stream-content {
+    padding: 8px;
+  }
 
-.context-menu button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  border: none;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-}
+  .stream-video {
+    border-radius: 20px 20px 0 0;
+  }
 
-.context-menu button:hover {
-  background-color: #f0f0f0;
-}
+  .video-container {
+    border-radius: 20px 20px 0 0;
+  }
 
-.message-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  background-color: #e9ecef;
-  padding: 10px;
-  border-radius: 5px;
-}
+  .chatroom {
+    border-radius: 0 0 20px 20px;
+  }
 
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
+  .stream-details {
+    padding: 16px 16px 6px 16px;
+  }
 
-.message-content {
-  display: flex;
-  flex-direction: column;
-}
+  .stream-title {
+    font-size: 18px;
+  }
 
-.empty-avatar {
-  background-color: #e9ecef;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  .viewer-count,
+  .viewer-label {
+    font-size: 13px;
+  }
+
+  .chat-input {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .chat-input-field {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .send-button {
+    padding: 12px 16px;
+  }
 }
 </style>

@@ -9,8 +9,10 @@
   },
   "account": {
     "change_password": "更改密碼",
+    "subtitle": "更新您的帳號密碼以保護帳戶安全",
     "old_password": "舊密碼：",
     "new_password": "新密碼：",
+    "password_hint": "密碼至少需要 8 個字元",
     "submit": "更改密碼",
     "success": "密碼更改成功。",
     "error": "密碼更改失敗"
@@ -18,17 +20,20 @@
   "login": {
     "title": "使用 Discord 登入",
     "discord_button": "使用 Discord 登入",
-    "native_login": "本地帳號登入"
+    "native_login": "本地帳號登入",
+    "or": "或"
   },
   "native_login": {
     "title": "本地帳號登入",
     "username": "使用者名稱",
     "password": "密碼",
     "login_button": "登入",
+    "back_to_home": "返回主頁",
     "success": "登入成功！",
     "error": {
       "invalid_response": "登入失敗：伺服器回應無效",
-      "unexpected": "發生意外錯誤"
+      "unexpected": "發生意外錯誤",
+      "failed": "登入失敗"
     }
   },
   "manage_accounts": {
@@ -42,12 +47,15 @@
     "delete_button": "刪除帳號",
     "success": {
       "create": "帳號建立成功。",
-      "delete": "帳號刪除成功。"
+      "delete": "帳號刪除成功。",
+      "deleted_title": "已刪除！"
     },
     "error": {
       "create": "建立帳號失敗",
+      "create_general": "建立帳號時發生錯誤",
       "delete": "刪除帳號失敗",
-      "fetch": "取得帳號列表失敗"
+      "fetch": "取得帳號列表失敗",
+      "fetch_general": "取得帳號列表時發生錯誤"
     },
     "roles": {
       "moderator": "管理員",
@@ -63,6 +71,8 @@
   },
   "manage_livestream": {
     "title": "管理直播",
+    "subtitle_create": "建立並設定您的直播",
+    "subtitle_manage": "管理您的直播設定和錄影",
     "name": "名稱：",
     "title_field": "標題：",
     "information": "資訊：",
@@ -71,12 +81,15 @@
     "ban_list": "封鎖清單：",
     "mute_list": "靜音清單：",
     "record_stream": "錄製串流：",
+    "recording_enabled": "已啟用錄製",
+    "recording_disabled": "已停用錄製",
     "download_recording": "下載錄影",
     "create": "建立",
     "delete": "刪除",
     "success": {
       "create": "直播建立成功。",
-      "delete": "您的直播已被刪除。"
+      "delete": "您的直播已被刪除。",
+      "deleted_title": "已刪除！"
     },
     "confirm_delete": {
       "title": "確定要刪除嗎？",
@@ -88,6 +101,7 @@
       "fetch_initial": "無法取得初始直播資料",
       "fetch_data": "無法取得直播資料",
       "create": "建立直播失敗",
+      "create_general": "建立直播時發生錯誤",
       "delete": "刪除直播失敗",
       "download": "下載錄影時發生錯誤",
       "auth_failed": "身份驗證失敗。請重新登入。"
@@ -103,7 +117,10 @@
   },
   "stream": {
     "viewers": "觀眾人數",
+    "show_more": "查看更多",
+    "show_less": "收起",
     "chat": {
+      "title": "即時聊天",
       "placeholder": "輸入訊息...",
       "send": "發送",
       "delete": "刪除",
@@ -125,6 +142,7 @@
     "title": "系統設定",
     "moderator_role_id": "管理員角色 ID：",
     "stream_access_role_ids": "串流存取角色 ID：",
+    "role_ids_hint": "每行輸入一個角色 ID",
     "save_button": "儲存",
     "success": "系統設定儲存成功。",
     "error": {

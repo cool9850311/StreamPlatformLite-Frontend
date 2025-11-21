@@ -30,15 +30,33 @@ onMounted(() => {
 
 <style scoped>
 .language-switcher {
-  padding: 5px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  background-color: #444;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
   color: white;
+  font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
 }
 
 .language-switcher:hover {
-  background-color: #555;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
-</style> 
+
+.language-switcher:focus {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.language-switcher option {
+  background: #2d3748;
+  color: white;
+  padding: 8px;
+}
+</style>
