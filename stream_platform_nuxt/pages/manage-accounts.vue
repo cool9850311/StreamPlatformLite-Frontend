@@ -63,29 +63,17 @@ export default {
       hasAccess: false
     };
   },
-  mounted() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return this.$router.push('/stream');
+  async mounted() {
+    try {
+      this.hasAccess = true;
+      await this.fetchAccountList();
+    } catch (error) {
+      // If fetch fails due to auth, redirect
+      this.$router.push('/stream');
     }
-
-    const decodedToken = this.decodeJWT(token);
-    if (decodedToken.Role !== 0) {
-      return this.$router.push('/stream');
-    }
-
-    this.hasAccess = true;
-    this.fetchAccountList();
   },
   methods: {
-    decodeJWT(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    },
+
     async createAccount() {
       const runtimeConfig = useRuntimeConfig();
       const backendUrl = runtimeConfig.public.BACKEND_URL;
@@ -94,9 +82,9 @@ export default {
         const response = await fetch(`${backendUrl}/origin-account/create`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Content-Type': 'application/json'
           },
+          credentials: 'include',
           body: JSON.stringify(this.newAccount)
         });
         if (response.ok) {
@@ -117,9 +105,7 @@ export default {
 
       try {
         const response = await fetch(`${backendUrl}/origin-account/list`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          credentials: 'include'
         });
         if (response.ok) {
           this.accountList = await response.json();
@@ -155,9 +141,9 @@ export default {
           const response = await fetch(`${backendUrl}/origin-account/delete`, {
             method: 'DELETE',
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
+              'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({ username: this.selectedAccount })
           });
           if (response.ok) {

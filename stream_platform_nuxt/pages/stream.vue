@@ -60,8 +60,9 @@ import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import Hls from 'hls.js';
 import axios from 'axios';
 import { computed } from 'vue';
-import Notification from '~/components/notification.vue'; // Import the Notification component
+import Notification from '~/components/notification.vue';
 import { useI18n } from 'vue-i18n';
+import DOMPurify from 'dompurify';
 
 const { t: $t } = useI18n();
 
@@ -91,7 +92,6 @@ const sendMessage = async () => {
   if (newMessage.value.trim() === '') return;
   
   try {
-    const token = localStorage.getItem('token');
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
     const streamUUID = streamData.value.uuid;
@@ -100,9 +100,7 @@ const sendMessage = async () => {
       stream_uuid: streamUUID,
       message: newMessage.value
     }, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      withCredentials: true
     });
 
     newMessage.value = '';
@@ -124,27 +122,31 @@ const decodeJWT = (token) => {
   return JSON.parse(jsonPayload);
 };
 
-const showOptions = (message, event) => {
-  const token = localStorage.getItem('token');
-  const decodedToken = decodeJWT(token);
-  if (decodedToken && decodedToken.Role <= 2) {
+const showOptions = async (message, event) => {
+  try {
+    const runtimeConfig = useRuntimeConfig();
+    const backendUrl = runtimeConfig.public.BACKEND_URL;
+    // Check auth by making a request - if authorized (admin/editor), show menu
+    const response = await axios.get(`${backendUrl}/system-settings`, {
+      withCredentials: true
+    });
+    // If request succeeds, user has admin/editor rights
     selectedMessage.value = message;
     contextMenuX.value = event.clientX;
     contextMenuY.value = event.clientY;
     showContextMenu.value = true;
+  } catch (error) {
+    // User doesn't have permissions, don't show menu
   }
 };
 
 const deleteMessage = async (message) => {
   try {
-    const token = localStorage.getItem('token');
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
 
     const response = await axios.delete(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${message.id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      withCredentials: true
     });
 
     if (response.status === 200) {
@@ -178,7 +180,6 @@ const muteUser = async (message) => {
   // If user confirms mute
   if (result.isConfirmed) {
     try {
-      const token = localStorage.getItem('token');
       const runtimeConfig = useRuntimeConfig();
       const backendUrl = runtimeConfig.public.BACKEND_URL;
 
@@ -186,9 +187,7 @@ const muteUser = async (message) => {
         stream_uuid: streamData.value.uuid,
         user_id: message.user_id
       }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       });
 
       if (response.status === 200) {
@@ -206,14 +205,11 @@ const muteUser = async (message) => {
 
 const pollDeletedMessages = async () => {
   try {
-    const token = localStorage.getItem('token');
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
 
     const response = await axios.get(`${backendUrl}/livestream/chat/delete/${streamData.value.uuid}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      withCredentials: true
     });
 
     const deletedMessageIds = response.data;
@@ -227,10 +223,9 @@ const pollDeletedMessages = async () => {
 
 const initializeHls = (video, streamURL) => {
   if (Hls.isSupported()) {
-    const token = localStorage.getItem('token');
     const hls = new Hls({
       xhrSetup: (xhr, url) => {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.withCredentials = true;
       }
     });
 
@@ -287,7 +282,11 @@ const initializeHls = (video, streamURL) => {
 };
 
 const formattedStreamDescription = computed(() => {
-  return streamDescription.value.replace(/\n/g, '<br>');
+  const withBreaks = streamDescription.value.replace(/\n/g, '<br>');
+  return DOMPurify.sanitize(withBreaks, {
+    ALLOWED_TAGS: ['br', 'b', 'i', 'u', 'em', 'strong', 'p'],
+    ALLOWED_ATTR: []
+  });
 });
 
 const handleClickOutside = (event) => {
@@ -302,15 +301,11 @@ const handleClickOutside = (event) => {
 
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('token');
-    const decodedToken = decodeJWT(token);
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
 
     const response = await axios.get(`${backendUrl}/livestream/one`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      withCredentials: true
     });
     streamData.value = response.data;
     streamTitle.value = streamData.value.title;
@@ -323,9 +318,7 @@ onMounted(async () => {
     const pingViewerCount = async () => {
       try {
         const response = await axios.get(`${backendUrl}/livestream/ping-viewer-count/${streamData.value.uuid}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          withCredentials: true
         });
         viewCount.value = response.data.viewer_count;
       } catch (error) {
@@ -339,9 +332,7 @@ onMounted(async () => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${lastMessageId.value}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          withCredentials: true
         });
         const newMessages = response.data;
         if (newMessages.length > 0) {
@@ -364,6 +355,11 @@ onMounted(async () => {
   } catch (error) {
     if (error.response && error.response.status === 401) {
       window.location.href = '/notAllowed';
+    } else if (error.response && error.response.status === 404) {
+      // No livestream currently active, show friendly message
+      streamTitle.value = 'No Stream Active';
+      streamDescription.value = 'There is currently no livestream available. Please check back later!';
+      console.log('No active livestream found');
     } else {
       console.error('Error fetching stream details:', error);
     }

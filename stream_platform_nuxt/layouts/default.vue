@@ -52,6 +52,7 @@
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
 import LanguageSwitcher from '~/components/LanguageSwitcher.vue';
+import axios from 'axios';
 
 export default {
   components: {
@@ -67,35 +68,60 @@ export default {
       isNative: false
     };
   },
-  mounted() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      this.$router.push('/');
-      return;
+  async mounted() {
+    // Check auth by trying to access a protected endpoint
+    const runtimeConfig = useRuntimeConfig();
+    const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+    try {
+      await axios.get(`${backendUrl}/livestream/one`, {
+        withCredentials: true
+      });
+    } catch (error) {
+      // Only redirect to login if unauthorized (401)
+      // 404 means user is logged in but no livestream exists
+      if (error.response && error.response.status === 401) {
+        this.$router.push('/');
+        return; // Don't continue if redirecting
+      }
     }
-    const decodedToken = this.decodeJWT(token);   
-    // Check if token is expired
-    const currentTime = Math.floor(Date.now() / 1000);
-    if (decodedToken.exp && decodedToken.exp < currentTime) {
-      // Token has expired, log out the user
-      this.logout();
-      return;
+
+    // Check admin status (should work regardless of livestream existence)
+    try {
+      await axios.get(`${backendUrl}/system-settings`, {
+        withCredentials: true
+      });
+      this.isAdmin = true;
+    } catch {
+      this.isAdmin = false;
     }
-    this.isAdmin = decodedToken.Role === 0;
-    this.isNative = decodedToken.IdentityProvider === 'Origin';
+
+    // Check if native by trying to access account endpoint (only for native users)
+    try {
+      await axios.get(`${backendUrl}/origin-account/list`, {
+        withCredentials: true
+      });
+      this.isNative = true;
+    } catch {
+      this.isNative = false;
+    }
   },
   methods: {
-    logout() {
-      localStorage.removeItem('token');
+    async logout() {
+      const runtimeConfig = useRuntimeConfig();
+      const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+      try {
+        // Call backend logout API to clear HTTP-only cookie
+        await axios.post(`${backendUrl}/logout`, {}, {
+          withCredentials: true
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+
+      // Redirect to login page regardless of API result
       window.location.href = '/';
-    },
-    decodeJWT(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
     }
   }
 };

@@ -38,38 +38,34 @@ export default {
       hasAccess: false
     };
   },
-  mounted() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return this.$router.push('/stream');
+  async mounted() {
+    try {
+      const runtimeConfig = useRuntimeConfig();
+      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      
+      const response = await fetch(`${backendUrl}/system-settings`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        return this.$router.push('/stream');
+      }
+      
+      this.hasAccess = true;
+      this.fetchSettings();
+    } catch (error) {
+      this.$router.push('/stream');
     }
-
-    const decodedToken = this.decodeJWT(token);
-    if (decodedToken.Role !== 0) {
-      return this.$router.push('/stream');
-    }
-
-    this.hasAccess = true;
-    this.fetchSettings();
   },
   methods: {
-    decodeJWT(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    },
+
     async fetchSettings() {
       const runtimeConfig = useRuntimeConfig();
       const backendUrl = runtimeConfig.public.BACKEND_URL;
 
       try {
         const response = await fetch(`${backendUrl}/system-settings`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          credentials: 'include'
         });
         if (response.ok) {
           const data = await response.json();
@@ -93,9 +89,9 @@ export default {
         const response = await fetch(`${backendUrl}/system-settings`, {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Content-Type': 'application/json'
           },
+          credentials: 'include',
           body: JSON.stringify({
             editor_role_id: this.settings.editorRoleId,
             stream_access_role_ids: this.settings.streamAccessRoleIds
