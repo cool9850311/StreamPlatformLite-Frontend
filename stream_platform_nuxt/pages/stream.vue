@@ -261,7 +261,18 @@ const initializeHls = (video, streamURL) => {
     const hls = new Hls({
       xhrSetup: (xhr, url) => {
         xhr.withCredentials = true;
-      }
+      },
+      // Optimize for short fragments (500ms)
+      maxBufferLength: 10,           // Maximum buffer length in seconds
+      maxMaxBufferLength: 20,         // Maximum max buffer length
+      maxBufferSize: 10 * 1000 * 1000, // 10MB max buffer size
+      maxBufferHole: 0.5,             // Maximum gap allowed in buffer
+      lowLatencyMode: true,           // Enable low latency mode for short fragments
+      backBufferLength: 5,            // Keep only 5 seconds in back buffer
+      // Prevent SourceBuffer issues
+      enableWorker: false,            // Disable worker to avoid timing issues
+      // Fragment loading optimization
+      maxFragLookUpTolerance: 0.25,   // Lower tolerance for fragment lookup
     });
 
     hls.loadSource(streamURL);
