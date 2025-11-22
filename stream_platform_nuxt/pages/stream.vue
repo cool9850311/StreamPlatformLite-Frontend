@@ -92,6 +92,7 @@ import axios from 'axios';
 import { computed } from 'vue';
 import Notification from '~/components/notification.vue';
 import { useI18n } from 'vue-i18n';
+import DOMPurify from 'dompurify';
 
 const { t: $t } = useI18n();
 
@@ -334,8 +335,6 @@ const formattedStreamDescription = computed(() => {
 
   // Only sanitize on client-side
   if (process.client) {
-    // DOMPurify will be available on client
-    const DOMPurify = require('dompurify');
     return DOMPurify.sanitize(withBreaks, {
       ALLOWED_TAGS: ['br', 'b', 'i', 'u', 'em', 'strong', 'p'],
       ALLOWED_ATTR: []
