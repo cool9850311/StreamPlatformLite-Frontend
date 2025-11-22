@@ -266,17 +266,31 @@ const initializeHls = (video, streamURL) => {
     hls.loadSource(streamURL);
     hls.attachMedia(video);
 
+    // Debug: Log all HLS events
+    hls.on(Hls.Events.MANIFEST_LOADING, () => {
+      console.log('🔵 HLS: MANIFEST_LOADING');
+    });
+
+    hls.on(Hls.Events.MANIFEST_LOADED, (event, data) => {
+      console.log('🟢 HLS: MANIFEST_LOADED', data);
+    });
+
     // Clear retry interval if we successfully parse the manifest and start playing
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      console.log('✅ HLS: MANIFEST_PARSED - trying to play');
       if (retryInterval) {
         clearInterval(retryInterval);
         retryInterval = null;
       }
-      video.play();
+      video.play().catch(err => {
+        console.error('❌ Video play() failed:', err);
+      });
     });
 
     hls.on(Hls.Events.ERROR, (event, data) => {
+      console.error('❌ HLS ERROR:', data);
       if (data.fatal) {
+        console.error('💀 HLS FATAL ERROR:', data.type, data.details);
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
             // Check if it's specifically a 404 error
