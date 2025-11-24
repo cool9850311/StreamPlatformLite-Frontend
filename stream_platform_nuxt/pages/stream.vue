@@ -888,6 +888,8 @@ onUnmounted(() => {
     flex-direction: column;
     padding: 12px;
     gap: 12px;
+    height: calc(100vh - 72px - 24px);
+    min-height: 0;
   }
 
   .stream-video {
@@ -911,6 +913,8 @@ onUnmounted(() => {
     flex: 1;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .stream-details {
