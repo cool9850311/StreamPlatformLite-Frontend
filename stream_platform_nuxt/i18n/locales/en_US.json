@@ -130,6 +130,10 @@
       "delete_failed": "Failed to delete message",
       "user_muted": "User muted successfully.",
       "mute_failed": "Failed to mute user",
+      "filter": {
+        "all": "All Messages",
+        "adminOnly": "Only Important Messages"
+      },
       "confirm_mute": {
         "title": "Confirm Mute User",
         "text": "Are you sure you want to mute {username}?",

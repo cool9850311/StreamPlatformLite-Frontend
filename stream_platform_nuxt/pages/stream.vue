@@ -32,10 +32,21 @@
           <span class="chat-icon">💬</span>
           <h3 class="chat-title">{{ $t('stream.chat.title') }}</h3>
         </div>
+        <!-- Chat filter options -->
+        <div class="chat-filter">
+          <label>
+            <input type="radio" v-model="filterMode" value="all" />
+            <span>{{ $t('stream.chat.filter.all') }}</span>
+          </label>
+          <label>
+            <input type="radio" v-model="filterMode" value="admin-only" />
+            <span>{{ $t('stream.chat.filter.adminOnly') }}</span>
+          </label>
+        </div>
         <!-- Dynamic chatroom -->
         <div class="messages">
           <ul>
-            <li v-for="message in messages" :key="message.id" @click="showOptions(message, $event)" class="message-item">
+            <li v-for="message in filteredMessages" :key="message.id" @click="showOptions(message, $event)" class="message-item">
               <img
                 :src="message.avatar ? `https://cdn.discordapp.com/avatars/${message.user_id}/${message.avatar}.png` : ''"
                 alt="User Avatar"
@@ -113,7 +124,19 @@ const isDescriptionExpanded = ref(false);
 const currentUserId = ref(null);
 const currentUserRole = ref(null);
 const isOwnMessage = ref(false);
+const filterMode = ref('all'); // 'all' or 'admin-only'
 let retryInterval = null;
+
+// Computed property for filtered messages
+const filteredMessages = computed(() => {
+  if (filterMode.value === 'all') {
+    return messages.value;
+  }
+  // Only show own messages + Admin/Streamer (role <= 1)
+  return messages.value.filter(msg =>
+    msg.user_id === currentUserId.value || msg.role <= 1
+  );
+});
 
 const toggleDescription = () => {
   isDescriptionExpanded.value = !isDescriptionExpanded.value;
@@ -364,7 +387,18 @@ const handleClickOutside = (event) => {
   }
 };
 
+// Watch filterMode and save to localStorage
+watch(filterMode, (newValue) => {
+  localStorage.setItem('chatFilterMode', newValue);
+});
+
 onMounted(async () => {
+  // Load filter mode from localStorage
+  const savedFilterMode = localStorage.getItem('chatFilterMode');
+  if (savedFilterMode) {
+    filterMode.value = savedFilterMode;
+  }
+
   try {
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
@@ -620,6 +654,35 @@ onUnmounted(() => {
   font-size: 20px;
   font-weight: 700;
   margin: 0;
+}
+
+.chat-filter {
+  display: flex;
+  gap: 20px;
+  padding: 12px 24px;
+  background: rgba(59, 130, 246, 0.1);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.chat-filter label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #1f2937;
+  transition: color 0.2s;
+}
+
+.chat-filter label:hover {
+  color: #3b82f6;
+}
+
+.chat-filter input[type="radio"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
 }
 
 .messages {
