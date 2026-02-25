@@ -130,6 +130,10 @@
       "delete_failed": "刪除訊息失敗",
       "user_muted": "用戶已成功被禁言。",
       "mute_failed": "禁言用戶失敗",
+      "filter": {
+        "all": "全部訊息",
+        "adminOnly": "僅顯示重要訊息"
+      },
       "confirm_mute": {
         "title": "確認禁言使用者",
         "text": "您確定要禁言 {username} 嗎？",

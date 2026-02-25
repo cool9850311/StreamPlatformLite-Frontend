@@ -130,6 +130,10 @@
       "delete_failed": "メッセージの削除に失敗しました",
       "user_muted": "ユーザーが正常にミュートされました。",
       "mute_failed": "ユーザーのミュートに失敗しました",
+      "filter": {
+        "all": "すべてのメッセージ",
+        "adminOnly": "重要なメッセージのみ"
+      },
       "confirm_mute": {
         "title": "ユーザーのミュート確認",
         "text": "{username} をミュートしてもよろしいですか？",
