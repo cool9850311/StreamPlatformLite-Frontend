@@ -75,7 +75,7 @@
         <span class="menu-icon">🗑️</span>
         {{ $t('stream.chat.delete') }}
       </button>
-      <button @click="muteUser(selectedMessage)" class="context-menu-item mute-item">
+      <button v-if="!isOwnMessage" @click="muteUser(selectedMessage)" class="context-menu-item mute-item">
         <span class="menu-icon">🔇</span>
         {{ $t('stream.chat.mute') }}
       </button>
@@ -110,6 +110,9 @@ const contextMenuY = ref(0);
 const selectedMessage = ref(null);
 const notification = ref(null);
 const isDescriptionExpanded = ref(false);
+const currentUserId = ref(null);
+const currentUserRole = ref(null);
+const isOwnMessage = ref(false);
 let retryInterval = null;
 
 const toggleDescription = () => {
@@ -158,21 +161,27 @@ const decodeJWT = (token) => {
 };
 
 const showOptions = async (message, event) => {
-  try {
-    const runtimeConfig = useRuntimeConfig();
-    const backendUrl = runtimeConfig.public.BACKEND_URL;
-    // Check auth by making a request - if authorized (admin/editor), show menu
-    const response = await axios.get(`${backendUrl}/system-settings`, {
-      withCredentials: true
-    });
-    // If request succeeds, user has admin/editor rights
+  // Check if this is the user's own message
+  if (currentUserId.value && message.user_id === currentUserId.value) {
+    // User's own message - always show menu
+    isOwnMessage.value = true;
     selectedMessage.value = message;
     contextMenuX.value = event.clientX;
     contextMenuY.value = event.clientY;
     showContextMenu.value = true;
-  } catch (error) {
-    // User doesn't have permissions, don't show menu
+    return;
   }
+
+  // Not user's own message - check if user has admin/editor rights (role <= 2)
+  if (currentUserRole.value !== null && currentUserRole.value <= 2) {
+    // Admin or Editor can delete any message
+    isOwnMessage.value = false;
+    selectedMessage.value = message;
+    contextMenuX.value = event.clientX;
+    contextMenuY.value = event.clientY;
+    showContextMenu.value = true;
+  }
+  // If role > 2 (User or Guest), don't show menu for other users' messages
 };
 
 const deleteMessage = async (message) => {
@@ -359,6 +368,17 @@ onMounted(async () => {
   try {
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+    // Fetch current user ID and role
+    try {
+      const meResponse = await axios.get(`${backendUrl}/me`, {
+        withCredentials: true
+      });
+      currentUserId.value = meResponse.data.user_id;
+      currentUserRole.value = meResponse.data.role;
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
 
     const response = await axios.get(`${backendUrl}/livestream/one`, {
       withCredentials: true
