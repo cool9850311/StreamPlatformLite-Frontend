@@ -3,8 +3,15 @@
     <main class="stream-content">
       <div class="stream-video">
         <!-- Plyr + HLS.js video player -->
-        <div class="video-container">
+        <div class="video-container" :class="{ 'hidden': !hasActiveStream }">
           <video id="video"></video>
+        </div>
+        <!-- No stream placeholder -->
+        <div v-if="!hasActiveStream" class="no-stream-placeholder">
+          <div class="placeholder-content">
+            <h3 class="placeholder-title">{{ $t('stream.no_stream.title') }}</h3>
+            <p class="placeholder-message">{{ $t('stream.no_stream.message') }}</p>
+          </div>
         </div>
         <!-- Stream details -->
         <div class="stream-details">
@@ -113,6 +120,7 @@ const streamData = ref({});
 const streamTitle = ref('Stream Title');
 const streamDescription = ref('This is a description of the stream.');
 const viewCount = ref(0);
+const hasActiveStream = ref(true);
 const messages = ref([]);
 const lastMessageId = ref('-1');
 const newMessage = ref('');
@@ -355,6 +363,8 @@ const initializeHls = (video, streamURL) => {
     // Clear retry interval when manifest is successfully parsed
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       console.log('✅ HLS: MANIFEST_PARSED - ready to play');
+      // 成功載入manifest，顯示播放器
+      hasActiveStream.value = true;
       if (retryInterval) {
         clearInterval(retryInterval);
         retryInterval = null;
@@ -380,7 +390,9 @@ const initializeHls = (video, streamURL) => {
           case Hls.ErrorTypes.NETWORK_ERROR:
             // Check if it's specifically a 404 error
             if (data.response && data.response.code === 404) {
-              console.error('404 error encountered. Scheduling retry every second...');
+              console.error('404 error encountered. Showing placeholder and scheduling retry...');
+              // 顯示佔位畫面
+              hasActiveStream.value = false;
               if (!retryInterval) {
                 retryInterval = setInterval(() => {
                   console.log('Retrying to load source...');
@@ -479,6 +491,8 @@ onMounted(async () => {
     streamDescription.value = streamData.value.information;
     const streamURL = streamData.value.streamURL;
 
+    // Initialize player - start with placeholder until manifest loads
+    hasActiveStream.value = false;
     const video = document.getElementById('video');
     playerInstance = initializeHls(video, streamURL);
 
@@ -523,10 +537,12 @@ onMounted(async () => {
     if (error.response && error.response.status === 401) {
       window.location.href = '/notAllowed';
     } else if (error.response && error.response.status === 404) {
-      // No livestream currently active, show friendly message
-      streamTitle.value = 'No Stream Active';
-      streamDescription.value = 'There is currently no livestream available. Please check back later!';
-      console.log('No active livestream found');
+      // No livestream configuration found, show placeholder
+      hasActiveStream.value = false;
+      console.log('No active livestream configuration found');
+
+      // Initialize chat functionality with empty uuid
+      document.addEventListener('click', handleClickOutside);
     } else {
       console.error('Error fetching stream details:', error);
     }
@@ -685,10 +701,44 @@ onUnmounted(() => {
   position: relative;
 }
 
+.video-container.hidden {
+  display: none;
+}
+
 .video-container video {
   width: 100%;
   height: auto;
   display: block;
+}
+
+.no-stream-placeholder {
+  width: 100%;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 24px 24px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 40px;
+}
+
+.placeholder-content {
+  text-align: center;
+  color: white;
+}
+
+.placeholder-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #f1f5f9;
+}
+
+.placeholder-message {
+  font-size: 16px;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.6;
 }
 
 .stream-details {
@@ -1088,6 +1138,12 @@ onUnmounted(() => {
     object-fit: contain;
   }
 
+  .no-stream-placeholder {
+    border-radius: 24px 0 0 0;
+    flex: 1;
+    min-height: 0;
+  }
+
   .stream-details {
     flex-shrink: 0;
   }
@@ -1142,6 +1198,20 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+
+  .no-stream-placeholder {
+    border-radius: 24px 24px 0 0;
+    aspect-ratio: 16 / 9;
+    min-height: 250px;
+  }
+
+  .placeholder-title {
+    font-size: 22px;
+  }
+
+  .placeholder-message {
+    font-size: 14px;
   }
 
   .chatroom {
@@ -1264,6 +1334,21 @@ onUnmounted(() => {
 
   .video-container {
     border-radius: 20px 20px 0 0;
+  }
+
+  .no-stream-placeholder {
+    border-radius: 20px 20px 0 0;
+    min-height: 200px;
+    padding: 30px 20px;
+  }
+
+  .placeholder-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .placeholder-message {
+    font-size: 13px;
   }
 
   .chatroom {
