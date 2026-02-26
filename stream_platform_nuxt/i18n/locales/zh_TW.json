@@ -119,6 +119,10 @@
     "viewers": "觀眾人數",
     "show_more": "查看更多",
     "show_less": "收起",
+    "no_stream": {
+      "title": "目前沒有直播",
+      "message": "目前沒有可用的直播，請稍後再回來查看！"
+    },
     "player": {
       "reload_required": "播放器載入失敗，請重新整理頁面（F5）"
     },

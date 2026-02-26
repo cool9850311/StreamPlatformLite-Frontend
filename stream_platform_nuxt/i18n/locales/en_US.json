@@ -119,6 +119,10 @@
     "viewers": "Viewers",
     "show_more": "Show more",
     "show_less": "Show less",
+    "no_stream": {
+      "title": "No Stream Active",
+      "message": "There is currently no livestream available. Please check back later!"
+    },
     "player": {
       "reload_required": "Player failed to load. Please refresh the page (F5)"
     },
