@@ -2,9 +2,9 @@
   <div class="stream-page">
     <main class="stream-content">
       <div class="stream-video">
-        <!-- HLS.js video player -->
+        <!-- Plyr + HLS.js video player -->
         <div class="video-container">
-          <video id="video" controls></video>
+          <video id="video"></video>
         </div>
         <!-- Stream details -->
         <div class="stream-details">
@@ -99,6 +99,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import Hls from 'hls.js';
+import Plyr from 'plyr';
+import 'plyr/dist/plyr.css';
 import axios from 'axios';
 import { computed } from 'vue';
 import Notification from '~/components/notification.vue';
@@ -126,6 +128,7 @@ const currentUserRole = ref(null);
 const isOwnMessage = ref(false);
 const filterMode = ref('all'); // 'all' or 'admin-only'
 let retryInterval = null;
+let playerInstance = null;
 
 // Computed property for filtered messages
 const filteredMessages = computed(() => {
@@ -289,15 +292,56 @@ const pollDeletedMessages = async () => {
 };
 
 const initializeHls = (video, streamURL) => {
+  // Initialize Plyr with basic controls
+  const player = new Plyr(video, {
+    controls: [
+      'play-large',
+      'play',
+      'progress',
+      'current-time',
+      'duration',
+      'mute',
+      'volume',
+      'pip',
+      'fullscreen'
+    ],
+    settings: [],
+    speed: { selected: 1, options: [] },
+    quality: { default: 'auto', options: [] },
+    tooltips: {
+      controls: false,  // 不顯示控制按鈕的tooltip
+      seek: true        // 保留進度條的時間提示
+    },
+    autoplay: false
+  });
+
   if (Hls.isSupported()) {
     const hls = new Hls({
       xhrSetup: (xhr, url) => {
         xhr.withCredentials = true;
-      }
+      },
+      enableWorker: true,
+      backBufferLength: Infinity,  // 保留所有已播放片段，允许无限回放
+      autoStartLoad: false         // 关闭自动载入，避免竞态条件
     });
 
-    hls.loadSource(streamURL);
-    hls.attachMedia(video);
+    // 正确的初始化顺序：先 attachMedia，等待 MEDIA_ATTACHED，再 loadSource
+    player.on('ready', () => {
+      console.log('🎬 Plyr ready, waiting before attaching media...');
+      // 延迟一下，确保所有东西都准备好
+      setTimeout(() => {
+        console.log('🔗 Attaching media to HLS...');
+        hls.attachMedia(video);
+      }, 100);
+    });
+
+    // 等待 HLS 与 video 绑定完成后，再载入来源
+    hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+      console.log('✅ HLS: MEDIA_ATTACHED - now loading source');
+      hls.loadSource(streamURL);
+      // 手动开始载入
+      hls.startLoad();
+    });
 
     // Debug: Log all HLS events
     hls.on(Hls.Events.MANIFEST_LOADING, () => {
@@ -308,20 +352,28 @@ const initializeHls = (video, streamURL) => {
       console.log('🟢 HLS: MANIFEST_LOADED', data);
     });
 
-    // Clear retry interval if we successfully parse the manifest and start playing
+    // Clear retry interval when manifest is successfully parsed
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      console.log('✅ HLS: MANIFEST_PARSED - trying to play');
+      console.log('✅ HLS: MANIFEST_PARSED - ready to play');
       if (retryInterval) {
         clearInterval(retryInterval);
         retryInterval = null;
       }
-      video.play().catch(err => {
-        console.error('❌ Video play() failed:', err);
-      });
+      // Don't auto-play, let user click play button
     });
 
     hls.on(Hls.Events.ERROR, (event, data) => {
+      // 出现 bufferAppendError 时通知用户刷新页面
+      if (data.details === 'bufferAppendError') {
+        console.warn('⚠️ bufferAppendError detected! Notifying user to refresh...');
+        if (notification.value) {
+          notification.value.showNotification($t('stream.player.reload_required'), 'error');
+        }
+        return;
+      }
+
       console.error('❌ HLS ERROR:', data);
+
       if (data.fatal) {
         console.error('💀 HLS FATAL ERROR:', data.type, data.details);
         switch (data.type) {
@@ -354,12 +406,17 @@ const initializeHls = (video, streamURL) => {
         }
       }
     });
+
+    // Store hls instance for cleanup
+    player.hls = hls;
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = streamURL;
     video.addEventListener('loadedmetadata', () => {
       video.play();
     });
   }
+
+  return player;
 };
 
 const formattedStreamDescription = computed(() => {
@@ -423,7 +480,7 @@ onMounted(async () => {
     const streamURL = streamData.value.streamURL;
 
     const video = document.getElementById('video');
-    initializeHls(video, streamURL);
+    playerInstance = initializeHls(video, streamURL);
 
     const pingViewerCount = async () => {
       try {
@@ -478,10 +535,105 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+
+  // Cleanup player and hls instance - 确保彻底销毁
+  if (playerInstance) {
+    if (playerInstance.hls) {
+      console.log('🧹 Cleaning up: detaching media and destroying HLS instance');
+      try {
+        // 先 detach 再 destroy，确保清理干净
+        playerInstance.hls.detachMedia();
+        playerInstance.hls.destroy();
+      } catch (err) {
+        console.error('Error destroying HLS:', err);
+      }
+    }
+    try {
+      playerInstance.destroy();
+    } catch (err) {
+      console.error('Error destroying Plyr:', err);
+    }
+  }
+
+  // Clear retry interval
+  if (retryInterval) {
+    clearInterval(retryInterval);
+  }
 });
 </script>
 
 <style scoped>
+/* Plyr Custom Theme - Modern Minimalist */
+:deep(.plyr) {
+  --plyr-color-main: #3b82f6;
+  --plyr-video-background: #000;
+  --plyr-menu-background: rgba(255, 255, 255, 0.95);
+  --plyr-menu-color: #334155;
+  --plyr-control-icon-size: 18px;
+  --plyr-control-spacing: 10px;
+  --plyr-font-size-base: 14px;
+  --plyr-font-size-small: 13px;
+  --plyr-font-size-large: 16px;
+  --plyr-range-thumb-height: 13px;
+  --plyr-range-track-height: 5px;
+  border-radius: 0;
+}
+
+:deep(.plyr__control:hover) {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+:deep(.plyr__control.plyr__tab-focus) {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
+
+:deep(.plyr__control--overlaid) {
+  background: rgba(59, 130, 246, 0.9);
+  padding: 18px;
+}
+
+:deep(.plyr__control--overlaid:hover) {
+  background: #3b82f6;
+}
+
+:deep(.plyr__progress__buffer) {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+:deep(.plyr--video .plyr__controls) {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  padding: 20px;
+}
+
+:deep(.plyr__tooltip) {
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 6px;
+  font-size: 13px;
+  padding: 5px 10px;
+}
+
+:deep(.plyr--video .plyr__control.plyr__tab-focus),
+:deep(.plyr--video .plyr__control:hover),
+:deep(.plyr--video .plyr__control[aria-expanded="true"]) {
+  background: rgba(59, 130, 246, 0.8);
+}
+
+:deep(.plyr__volume input[type="range"]::-webkit-slider-thumb) {
+  background: #3b82f6;
+}
+
+:deep(.plyr__volume input[type="range"]::-moz-range-thumb) {
+  background: #3b82f6;
+}
+
+:deep(.plyr__progress input[type="range"]::-webkit-slider-thumb) {
+  background: #3b82f6;
+}
+
+:deep(.plyr__progress input[type="range"]::-moz-range-thumb) {
+  background: #3b82f6;
+}
+
 * {
   box-sizing: border-box;
 }

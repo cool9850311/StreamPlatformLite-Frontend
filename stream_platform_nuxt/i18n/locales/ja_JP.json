@@ -119,6 +119,9 @@
     "viewers": "視聴者数",
     "show_more": "もっと見る",
     "show_less": "閉じる",
+    "player": {
+      "reload_required": "プレイヤーの読み込みに失敗しました。ページを更新してください（F5）"
+    },
     "chat": {
       "title": "ライブチャット",
       "placeholder": "メッセージを入力...",
