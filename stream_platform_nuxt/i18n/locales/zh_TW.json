@@ -119,6 +119,9 @@
     "viewers": "觀眾人數",
     "show_more": "查看更多",
     "show_less": "收起",
+    "player": {
+      "reload_required": "播放器載入失敗，請重新整理頁面（F5）"
+    },
     "chat": {
       "title": "即時聊天",
       "placeholder": "輸入訊息...",

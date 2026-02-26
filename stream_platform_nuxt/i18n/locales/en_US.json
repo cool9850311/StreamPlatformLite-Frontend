@@ -119,6 +119,9 @@
     "viewers": "Viewers",
     "show_more": "Show more",
     "show_less": "Show less",
+    "player": {
+      "reload_required": "Player failed to load. Please refresh the page (F5)"
+    },
     "chat": {
       "title": "Live Chat",
       "placeholder": "Type your message...",
