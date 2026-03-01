@@ -14,7 +14,7 @@
 
       <h2 class="welcome-title">{{ $t('login.title') }}</h2>
 
-      <a :href="discordOAuthUrl" class="btn-modern btn-discord">
+      <a :href="discordLoginUrl" class="btn-modern btn-discord">
         <span class="btn-icon">🎮</span>
         {{ $t('login.discord_button') }}
       </a>
@@ -33,9 +33,39 @@
 
 <script setup lang="ts">
 import LanguageSwitcher from '~/components/LanguageSwitcher.vue';
+import { useI18n } from 'vue-i18n';
 
+const route = useRoute()
 const runtimeConfig = useRuntimeConfig()
-const discordOAuthUrl = runtimeConfig.public.DISCORD_URL;
+const backendUrl = runtimeConfig.public.BACKEND_URL
+const discordLoginUrl = `${backendUrl}/oauth/discord/init`
+
+const { $swal } = useNuxtApp()
+const { t } = useI18n()
+
+onMounted(() => {
+  // Check for error parameter in URL
+  const error = route.query.error as string
+
+  if (error === 'invalid_state') {
+    $swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'error',
+      title: t('login.error.invalid_state'),
+      timer: 3000,
+      timerProgressBar: true,
+      showConfirmButton: false
+    })
+
+    // Clean up URL parameters after showing toast
+    setTimeout(() => {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('error')
+      window.history.replaceState({}, '', url.pathname)
+    }, 100)
+  }
+})
 
 definePageMeta({
   layout: false

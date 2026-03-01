@@ -21,7 +21,10 @@
     "title": "Login with Discord",
     "discord_button": "Login with Discord",
     "native_login": "Native Account Login",
-    "or": "or"
+    "or": "or",
+    "error": {
+      "invalid_state": "Security validation failed. Please try again."
+    }
   },
   "native_login": {
     "title": "Native Account Login",
