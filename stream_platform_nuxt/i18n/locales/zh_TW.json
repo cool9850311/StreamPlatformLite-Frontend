@@ -21,7 +21,10 @@
     "title": "使用 Discord 登入",
     "discord_button": "使用 Discord 登入",
     "native_login": "本地帳號登入",
-    "or": "或"
+    "or": "或",
+    "error": {
+      "invalid_state": "安全驗證失敗，請重新登入。"
+    }
   },
   "native_login": {
     "title": "本地帳號登入",

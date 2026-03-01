@@ -12,7 +12,6 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      DISCORD_URL: '',
       BACKEND_URL: ''
     }
   },

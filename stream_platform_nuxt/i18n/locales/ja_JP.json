@@ -21,7 +21,10 @@
     "title": "Discordでログイン",
     "discord_button": "Discordでログイン",
     "native_login": "アカウントログイン",
-    "or": "または"
+    "or": "または",
+    "error": {
+      "invalid_state": "セキュリティ検証に失敗しました。もう一度ログインしてください。"
+    }
   },
   "native_login": {
     "title": "ネイティブアカウントログイン",
