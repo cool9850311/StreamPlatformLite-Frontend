@@ -3,7 +3,6 @@
     <div class="livestream-container">
       <div class="livestream-card">
         <div class="livestream-header">
-          <div class="header-icon">📡</div>
           <div class="header-content">
             <h1 class="livestream-title">{{ $t('manage_livestream.title') }}</h1>
             <p class="livestream-subtitle">{{ isLivestreamExist ? $t('manage_livestream.subtitle_manage') : $t('manage_livestream.subtitle_create') }}</p>
@@ -16,7 +15,6 @@
           <div class="form-section">
             <div class="form-group">
               <label for="name" class="form-label">
-                <span class="label-icon">🏷️</span>
                 {{ $t('manage_livestream.name') }}
               </label>
               <input
@@ -31,7 +29,6 @@
 
             <div class="form-group">
               <label for="title" class="form-label">
-                <span class="label-icon">📝</span>
                 {{ $t('manage_livestream.title_field') }}
               </label>
               <input
@@ -46,7 +43,6 @@
 
             <div class="form-group">
               <label for="information" class="form-label">
-                <span class="label-icon">📋</span>
                 {{ $t('manage_livestream.information') }}
               </label>
               <textarea
@@ -61,21 +57,21 @@
 
             <div class="form-group">
               <label for="visibility" class="form-label">
-                <span class="label-icon">👁️</span>
                 {{ $t('manage_livestream.visibility') }}
               </label>
-              <input
+              <select
                 v-model="livestream.visibility"
                 id="visibility"
-                type="text"
-                class="form-control form-control-readonly"
-                :disabled="true"
-              />
+                class="form-control"
+                :disabled="isLivestreamExist"
+              >
+                <option value="public">{{ $t('stream.public') }}</option>
+                <option value="member_only">{{ $t('stream.member_only') }}</option>
+              </select>
             </div>
 
             <div v-if="isLivestreamExist" class="form-group">
               <label for="streamPushURL" class="form-label">
-                <span class="label-icon">🔗</span>
                 {{ $t('manage_livestream.stream_push_url') }}
               </label>
               <input
@@ -89,7 +85,6 @@
 
             <div v-if="isLivestreamExist" class="form-group">
               <label for="banList" class="form-label">
-                <span class="label-icon">🚫</span>
                 {{ $t('manage_livestream.ban_list') }}
               </label>
               <textarea
@@ -103,7 +98,6 @@
 
             <div v-if="isLivestreamExist" class="form-group">
               <label for="muteList" class="form-label">
-                <span class="label-icon">🔇</span>
                 {{ $t('manage_livestream.mute_list') }}
               </label>
               <textarea
@@ -117,7 +111,6 @@
 
             <div class="form-group">
               <label class="form-label">
-                <span class="label-icon">🎥</span>
                 {{ $t('manage_livestream.record_stream') }}
               </label>
               <div class="toggle-wrapper">
@@ -137,7 +130,6 @@
               @click="downloadRecording"
               class="btn btn-download"
             >
-              <span class="btn-icon">📥</span>
               {{ $t('manage_livestream.download_recording') }}
             </button>
 
@@ -146,7 +138,6 @@
               type="submit"
               class="btn btn-primary"
             >
-              <span class="btn-icon">✨</span>
               {{ $t('manage_livestream.create') }}
             </button>
 
@@ -156,7 +147,6 @@
               @click="deleteLivestream"
               class="btn btn-danger"
             >
-              <span class="btn-icon">🗑️</span>
               {{ $t('manage_livestream.delete') }}
             </button>
           </div>
@@ -251,9 +241,20 @@ export default {
 
         if (response.ok) {
           const data = await response.json();
-          this.livestream = data;
-          this.banListString = data.ban_list.join('\n');
-          this.muteListString = data.mute_list.join('\n');
+          // Map API response to frontend data structure
+          this.livestream = {
+            uuid: data.uuid,
+            name: data.name,
+            visibility: data.visibility,
+            title: data.title,
+            information: data.information,
+            streamPushURL: data.streamPushURL,
+            banList: data.ban_list || [],
+            muteList: data.mute_list || [],
+            is_record: data.is_record
+          };
+          this.banListString = (data.ban_list || []).join('\n');
+          this.muteListString = (data.mute_list || []).join('\n');
           this.isLivestreamExist = true;
         } else {
           console.error('Failed to fetch livestream data');
@@ -287,10 +288,8 @@ export default {
           const errorData = await response.json();
           this.$refs.notification.showNotification(errorData.message || this.$t('manage_livestream.error.create'), 'error');
         } else {
-          const data = await response.json();
-          this.livestream = data;
           this.isLivestreamExist = true;
-          this.fetchLivestream();
+          await this.fetchLivestream();
           this.$refs.notification.showNotification(this.$t('manage_livestream.success.create'), 'success');
         }
       } catch (error) {

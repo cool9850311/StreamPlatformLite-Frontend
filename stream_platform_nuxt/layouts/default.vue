@@ -3,13 +3,22 @@
     <header class="main-header">
       <nav>
         <a href="/stream" class="brand-section">
-          <div class="logo-icon">📺</div>
+          <div class="logo-icon">
+            <img src="/logo.png" alt="StreamPlatform Logo" class="logo-image" />
+          </div>
           <h1 class="brand-title">StreamPlatform<span class="lite">Lite</span></h1>
         </a>
 
         <div class="right-nav">
           <LanguageSwitcher />
-          <Menu as="div" class="relative">
+
+          <!-- 未登录：显示登录按钮 -->
+          <a v-if="!isLoggedIn" href="/" class="btn-nav-login">
+            {{ $t('navigation.login') }}
+          </a>
+
+          <!-- 已登录：显示用户菜单 -->
+          <Menu v-else as="div" class="relative">
             <MenuButton class="dropdown-button">
               <span class="menu-icon">☰</span>
             </MenuButton>
@@ -24,38 +33,32 @@
               <MenuItems class="dropdown-menu">
                 <MenuItem>
                   <a href="/stream" class="dropdown-item">
-                    <span class="item-icon">🎬</span>
                     {{ $t('navigation.stream') }}
                   </a>
                 </MenuItem>
 
                 <MenuItem v-if="isAdmin">
                   <a href="/system-settings" class="dropdown-item">
-                    <span class="item-icon">⚙️</span>
                     {{ $t('navigation.system_settings') }}
                   </a>
                 </MenuItem>
                 <MenuItem v-if="isAdmin">
                   <a href="/manage-livestream" class="dropdown-item">
-                    <span class="item-icon">📡</span>
                     {{ $t('navigation.manage_livestreams') }}
                   </a>
                 </MenuItem>
                 <MenuItem v-if="isAdmin">
                   <a href="/manage-accounts" class="dropdown-item">
-                    <span class="item-icon">👥</span>
                     {{ $t('navigation.manage_accounts') }}
                   </a>
                 </MenuItem>
                 <MenuItem v-if="isNative">
                   <a href="/account" class="dropdown-item">
-                    <span class="item-icon">👤</span>
                     {{ $t('navigation.account') }}
                   </a>
                 </MenuItem>
                 <MenuItem>
                   <a href="#" @click="logout" class="dropdown-item">
-                    <span class="item-icon">🚪</span>
                     {{ $t('navigation.logout') }}
                   </a>
                 </MenuItem>
@@ -86,46 +89,28 @@ export default {
   },
   data() {
     return {
+      isLoggedIn: false,
       isAdmin: false,
       isNative: false
     };
   },
   async mounted() {
-    // Check auth by trying to access a protected endpoint
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
 
-    try {
-      await axios.get(`${backendUrl}/livestream/one`, {
-        withCredentials: true
-      });
-    } catch (error) {
-      // Only redirect to login if unauthorized (401)
-      // 404 means user is logged in but no livestream exists
-      if (error.response && error.response.status === 401) {
-        this.$router.push('/');
-        return; // Don't continue if redirecting
-      }
-    }
-
-    // Check admin status (should work regardless of livestream existence)
-    try {
-      await axios.get(`${backendUrl}/system-settings`, {
-        withCredentials: true
-      });
-      this.isAdmin = true;
-    } catch {
-      this.isAdmin = false;
-    }
-
-    // Check if native by checking identity provider
+    // 检查登录状态（不强制重定向）
     try {
       const meResponse = await axios.get(`${backendUrl}/me`, {
         withCredentials: true
       });
+
+      this.isLoggedIn = true;
       this.isNative = meResponse.data.identity_provider === 'Origin';
-    } catch {
-      this.isNative = false;
+      // Role 是數字: Admin=0, Streamer=1, Editor=2, User=3, Guest=4, Anonymous=5
+      this.isAdmin = meResponse.data.role === 0;
+    } catch (error) {
+      // 未登录，显示登录按钮
+      this.isLoggedIn = false;
     }
   },
   methods: {
@@ -195,13 +180,15 @@ nav {
 .logo-icon {
   width: 40px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  backdrop-filter: blur(10px);
+}
+
+.logo-image {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 .brand-title {
@@ -276,9 +263,7 @@ nav {
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: block;
   font-weight: 500;
   font-size: 14px;
 }
@@ -287,13 +272,6 @@ nav {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   transform: translateX(4px);
-}
-
-.item-icon {
-  font-size: 18px;
-  display: inline-block;
-  width: 24px;
-  text-align: center;
 }
 
 .main-content {
@@ -312,9 +290,13 @@ nav {
   }
 
   .logo-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 16px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .logo-image {
+    width: 36px;
+    height: 36px;
   }
 
   .dropdown-menu {
@@ -329,14 +311,33 @@ nav {
   }
 
   .logo-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .logo-image {
+    width: 32px;
+    height: 32px;
   }
 
   .dropdown-menu {
     min-width: 90vw;
     max-width: 90vw;
   }
+}
+
+.btn-nav-login {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.btn-nav-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 </style>

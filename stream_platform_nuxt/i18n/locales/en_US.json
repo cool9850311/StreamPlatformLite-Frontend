@@ -5,7 +5,8 @@
     "manage_livestreams": "Manage Livestreams",
     "manage_accounts": "Manage Accounts",
     "account": "Account",
-    "logout": "Logout"
+    "logout": "Logout",
+    "login": "Login"
   },
   "account": {
     "change_password": "Change Password",
@@ -22,6 +23,8 @@
     "discord_button": "Login with Discord",
     "native_login": "Native Account Login",
     "or": "or",
+    "view_public_stream": "View Public Stream",
+    "or_login": "or login to access more features",
     "error": {
       "invalid_state": "Security validation failed. Please try again."
     }
@@ -122,6 +125,15 @@
     "viewers": "Viewers",
     "show_more": "Show more",
     "show_less": "Show less",
+    "public": "Public",
+    "member_only": "Members Only",
+    "member_only_prompt": "This is a members-only stream. Login to access full features.",
+    "member_only_title": "Members Only Stream",
+    "member_only_message": "You need to login to watch this stream.",
+    "login_now": "Login",
+    "login_to_watch": "Login to Watch",
+    "no_active_stream": "No Active Stream",
+    "check_back_later": "Please check back later.",
     "no_stream": {
       "title": "No Stream Active",
       "message": "There is currently no livestream available. Please check back later!"
@@ -135,6 +147,10 @@
       "send": "Send",
       "delete": "Delete",
       "mute": "Mute",
+      "anonymous": "Anonymous",
+      "login_required": "Please login to send messages",
+      "login_to_chat": "Login to participate in chat",
+      "login": "Login",
       "not_allowed": "You are not allowed to send messages in this chat. You may be muted or banned.",
       "message_deleted": "Message deleted successfully.",
       "delete_failed": "Failed to delete message",

@@ -2,25 +2,51 @@
   <div class="stream-page">
     <main class="stream-content">
       <div class="stream-video">
+        <!-- Member Only 提示横幅 -->
+        <div v-if="showLoginPrompt && !visibilityError" class="login-prompt-banner">
+          <span class="prompt-icon">🔒</span>
+          <span>{{ $t('stream.member_only_prompt') }}</span>
+          <a href="/" class="btn-login-small">{{ $t('stream.login_now') }}</a>
+        </div>
+
+        <!-- 无直播提示 -->
+        <div v-if="visibilityError === 'no_stream'" class="no-stream-placeholder">
+          <h2>{{ $t('stream.no_active_stream') }}</h2>
+          <p>{{ $t('stream.check_back_later') }}</p>
+        </div>
+
+        <!-- 权限错误提示 -->
+        <div v-else-if="visibilityError === 'member_only'" class="access-denied">
+          <h2>{{ $t('stream.member_only_title') }}</h2>
+          <p>{{ $t('stream.member_only_message') }}</p>
+          <a href="/" class="btn-login-large">{{ $t('stream.login_to_watch') }}</a>
+        </div>
+
         <!-- Plyr + HLS.js video player -->
-        <div class="video-container" :class="{ 'hidden': !hasActiveStream }">
+        <div v-else class="video-container" :class="{ 'hidden': !hasActiveStream }">
           <video id="video"></video>
         </div>
-        <!-- No stream placeholder -->
-        <div v-if="!hasActiveStream" class="no-stream-placeholder">
+
+        <!-- Old No stream placeholder (kept for existing stream loading logic) -->
+        <div v-if="!hasActiveStream && !visibilityError" class="no-stream-placeholder">
           <div class="placeholder-content">
             <h3 class="placeholder-title">{{ $t('stream.no_stream.title') }}</h3>
             <p class="placeholder-message">{{ $t('stream.no_stream.message') }}</p>
           </div>
         </div>
         <!-- Stream details -->
-        <div class="stream-details">
+        <div class="stream-details" v-if="!visibilityError || visibilityError === 'no_stream'">
           <div class="stream-header">
             <div class="stream-title-wrapper">
               <h2 class="stream-title">{{ streamTitle }}</h2>
+              <span v-if="streamData.visibility === 'public'" class="badge-public">
+                🌐 {{ $t('stream.public') }}
+              </span>
+              <span v-else-if="streamData.visibility === 'member_only'" class="badge-member">
+                🔒 {{ $t('stream.member_only') }}
+              </span>
             </div>
             <div class="view-count-badge">
-              <span class="viewer-icon">👥</span>
               <span class="viewer-count">{{ viewCount }}</span>
               <span class="viewer-label">{{ $t('stream.viewers') }}</span>
             </div>
@@ -36,7 +62,6 @@
       <div class="chatroom" ref="chatroom">
         <!-- Chat header -->
         <div class="chat-header">
-          <span class="chat-icon">💬</span>
           <h3 class="chat-title">{{ $t('stream.chat.title') }}</h3>
         </div>
         <!-- Chat filter options -->
@@ -62,7 +87,6 @@
                 v-if="message.avatar"
               />
               <div v-else class="user-avatar empty-avatar">
-                <span class="avatar-placeholder">👤</span>
               </div>
               <div class="message-content">
                 <div class="username">{{ message.username }}</div>
@@ -73,28 +97,36 @@
         </div>
         <!-- Chat input and send button -->
         <div class="chat-input">
-          <input
-            v-model="newMessage"
-            maxlength="100"
-            :placeholder="$t('stream.chat.placeholder')"
-            @keyup.enter="sendMessage"
-            class="chat-input-field"
-          />
-          <button @click="sendMessage" class="send-button">
-            <span class="send-icon">📤</span>
-            <span class="send-text">{{ $t('stream.chat.send') }}</span>
-          </button>
+          <!-- 已登录：显示输入框 -->
+          <template v-if="isLoggedIn">
+            <input
+              v-model="newMessage"
+              maxlength="100"
+              :placeholder="$t('stream.chat.placeholder')"
+              @keyup.enter="sendMessage"
+              class="chat-input-field"
+            />
+            <button @click="sendMessage" class="send-button">
+              <span class="send-text">{{ $t('stream.chat.send') }}</span>
+            </button>
+          </template>
+
+          <!-- 未登录：显示登录提示 -->
+          <template v-else>
+            <div class="login-prompt-box">
+              <span>{{ $t('stream.chat.login_to_chat') }}</span>
+              <a href="/" class="btn-login-inline">{{ $t('stream.chat.login') }}</a>
+            </div>
+          </template>
         </div>
       </div>
     </main>
     <!-- Context menu for message options -->
     <div v-if="showContextMenu" class="context-menu" :style="{ top: contextMenuY + 'px', left: contextMenuX + 'px' }">
-      <button @click="deleteMessage(selectedMessage)" class="context-menu-item delete-item">
-        <span class="menu-icon">🗑️</span>
+      <button v-if="canDeleteMessage(selectedMessage)" @click="deleteMessage(selectedMessage)" class="context-menu-item delete-item">
         {{ $t('stream.chat.delete') }}
       </button>
-      <button v-if="!isOwnMessage" @click="muteUser(selectedMessage)" class="context-menu-item mute-item">
-        <span class="menu-icon">🔇</span>
+      <button v-if="canMuteUser(selectedMessage)" @click="muteUser(selectedMessage)" class="context-menu-item mute-item">
         {{ $t('stream.chat.mute') }}
       </button>
     </div>
@@ -135,6 +167,10 @@ const currentUserId = ref(null);
 const currentUserRole = ref(null);
 const isOwnMessage = ref(false);
 const filterMode = ref('all'); // 'all' or 'admin-only'
+const isLoggedIn = ref(false);
+const isAnonymous = ref(true);
+const showLoginPrompt = ref(false);
+const visibilityError = ref(null);
 let retryInterval = null;
 let playerInstance = null;
 
@@ -149,6 +185,48 @@ const filteredMessages = computed(() => {
   );
 });
 
+// Permission check function for deleting messages
+const canDeleteMessage = (message) => {
+  // Own messages can always be deleted
+  if (message.user_id === currentUserId.value) {
+    return true;
+  }
+
+  // Admin/Streamer (role <= 1) can delete anyone's messages
+  if (currentUserRole.value <= 1) {
+    return true;
+  }
+
+  // Editor (role=2) can only delete User (3) and Guest (4) messages
+  if (currentUserRole.value === 2) {
+    return message.role > 2;  // Only User (3) and Guest (4)
+  }
+
+  // User/Guest (role > 2) cannot delete others' messages
+  return false;
+};
+
+// Permission check function for muting users
+const canMuteUser = (message) => {
+  // Cannot mute self
+  if (message.user_id === currentUserId.value) {
+    return false;
+  }
+
+  // Admin/Streamer (role <= 1) can mute anyone
+  if (currentUserRole.value <= 1) {
+    return true;
+  }
+
+  // Editor (role=2) can only mute User(3), Guest(4), Anonymous(5)
+  if (currentUserRole.value === 2) {
+    return message.role > 2;
+  }
+
+  // User/Guest have no mute permission
+  return false;
+};
+
 const toggleDescription = () => {
   isDescriptionExpanded.value = !isDescriptionExpanded.value;
 };
@@ -161,8 +239,16 @@ const scrollToBottom = () => {
 };
 
 const sendMessage = async () => {
+  if (!isLoggedIn.value) {
+    notification.value.showNotification(
+      $t('stream.chat.login_required'),
+      'warning'
+    );
+    return;
+  }
+
   if (newMessage.value.trim() === '') return;
-  
+
   try {
     const runtimeConfig = useRuntimeConfig();
     const backendUrl = runtimeConfig.public.BACKEND_URL;
@@ -263,7 +349,7 @@ const muteUser = async (message) => {
 
       const response = await axios.post(`${backendUrl}/livestream/mute-user`, {
         stream_uuid: streamData.value.uuid,
-        user_id: message.user_id
+        chat_id: message.id
       }, {
         withCredentials: true
       });
@@ -468,21 +554,44 @@ onMounted(async () => {
     filterMode.value = savedFilterMode;
   }
 
+  const runtimeConfig = useRuntimeConfig();
+  const backendUrl = runtimeConfig.public.BACKEND_URL;
+
+  // 第一步：检查用户登录状态
   try {
-    const runtimeConfig = useRuntimeConfig();
-    const backendUrl = runtimeConfig.public.BACKEND_URL;
+    const meResponse = await axios.get(`${backendUrl}/me`, {
+      withCredentials: true
+    });
 
-    // Fetch current user ID and role
-    try {
-      const meResponse = await axios.get(`${backendUrl}/me`, {
-        withCredentials: true
-      });
-      currentUserId.value = meResponse.data.user_id;
-      currentUserRole.value = meResponse.data.role;
-    } catch (error) {
-      console.error('Error fetching current user:', error);
+    // 成功获取用户信息
+    currentUserId.value = meResponse.data.user_id;
+    currentUserRole.value = meResponse.data.role;
+
+    // 根据角色设置登录状态
+    // Guest (role=4) 可以在 Public 直播中聊天，所以视为已登录
+    // 只有 Anonymous (role=5) 不能聊天
+    if (meResponse.data.role <= 4) {
+      // Guest, User, Editor, Admin - 可以聊天
+      isLoggedIn.value = true;
+      isAnonymous.value = false;
+    } else {
+      // Anonymous only
+      isLoggedIn.value = false;
+      isAnonymous.value = true;
     }
+  } catch (error) {
+    // 401 = 未登录（真正的匿名用户，没有token）
+    if (error.response && error.response.status === 401) {
+      isLoggedIn.value = false;
+      isAnonymous.value = true;
+      currentUserRole.value = 5; // Anonymous role
+    } else {
+      console.error('Error checking login status:', error);
+    }
+  }
 
+  // 第二步：加载直播信息（根据权限可能成功或失败）
+  try {
     const response = await axios.get(`${backendUrl}/livestream/one`, {
       withCredentials: true
     });
@@ -491,11 +600,51 @@ onMounted(async () => {
     streamDescription.value = streamData.value.information;
     const streamURL = streamData.value.streamURL;
 
-    // Initialize player - start with placeholder until manifest loads
+    // 初始化视频播放器
     hasActiveStream.value = false;
     const video = document.getElementById('video');
     playerInstance = initializeHls(video, streamURL);
 
+    // 如果是member_only且用户未登录，显示登录提示
+    // Guest用户(role=4)不能访问member_only，需要显示登录提示
+    if (streamData.value.visibility === 'member_only' && (isAnonymous.value || currentUserRole.value === 4)) {
+      showLoginPrompt.value = true;
+      // Guest在member_only中不能聊天
+      if (currentUserRole.value === 4) {
+        isLoggedIn.value = false;
+      }
+    }
+
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+      // Member_only直播，用户无权访问（Anonymous或Guest）
+      visibilityError.value = 'member_only';
+      showLoginPrompt.value = true;
+      isLoggedIn.value = false;  // 禁用聊天输入
+    } else if (error.response && error.response.status === 404) {
+      // 没有活跃的直播
+      visibilityError.value = 'no_stream';
+    } else {
+      console.error('Error loading stream:', error);
+      visibilityError.value = 'error';
+    }
+  }
+
+  // Generate or retrieve anonymous ID from localStorage
+  const getOrCreateAnonymousId = () => {
+    if (typeof window === 'undefined') return null;
+
+    let viewerId = localStorage.getItem('viewer_id');
+    if (!viewerId) {
+      // Generate UUID v4
+      viewerId = crypto.randomUUID();
+      localStorage.setItem('viewer_id', viewerId);
+    }
+    return viewerId;
+  };
+
+  // 第三步：如果已登录且有直播，启动聊天和观众计数
+  if (isLoggedIn.value && streamData.value && streamData.value.uuid) {
     const pingViewerCount = async () => {
       try {
         const response = await axios.get(`${backendUrl}/livestream/ping-viewer-count/${streamData.value.uuid}`, {
@@ -507,9 +656,55 @@ onMounted(async () => {
       }
     };
 
+    const fetchMessages = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${lastMessageId.value}`, {
+          withCredentials: true
+        });
+        const newMessages = response.data;
+        if (newMessages.length > 0) {
+          messages.value.push(...newMessages);
+          lastMessageId.value = newMessages[newMessages.length - 1].id;
+          scrollToBottom();
+        }
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
+
+    // 启动聊天轮询
+    setInterval(fetchMessages, 500);
+    fetchMessages();
+    setInterval(pollDeletedMessages, 2000);
+    pollDeletedMessages();
+
+    // 启动观众计数轮询
+    setInterval(pingViewerCount, 5000);
+    pingViewerCount();
+  } else if (streamData.value && streamData.value.uuid) {
+    // 匿名用户 ping viewer count with anonymous_id
+    const pingViewerCount = async () => {
+      try {
+        let url = `${backendUrl}/livestream/ping-viewer-count/${streamData.value.uuid}`;
+
+        // Add anonymous_id for anonymous users
+        const anonymousId = getOrCreateAnonymousId();
+        if (anonymousId) {
+          url += `?anonymous_id=${anonymousId}`;
+        }
+
+        const response = await axios.get(url, { withCredentials: true });
+        viewCount.value = response.data.viewer_count;
+      } catch (error) {
+        console.error('Error pinging viewer count:', error);
+      }
+    };
+
+    // 启动匿名用户的观众计数轮询
     setInterval(pingViewerCount, 5000);
     pingViewerCount();
 
+    // 匿名用户也可以看聊天（如果是public直播）
     const fetchMessages = async () => {
       try {
         const response = await axios.get(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${lastMessageId.value}`, {
@@ -529,24 +724,12 @@ onMounted(async () => {
     setInterval(fetchMessages, 500);
     fetchMessages();
 
+    // 新增：匿名用户也需要看到消息删除同步
     setInterval(pollDeletedMessages, 2000);
     pollDeletedMessages();
-
-    document.addEventListener('click', handleClickOutside);
-  } catch (error) {
-    if (error.response && error.response.status === 401) {
-      window.location.href = '/notAllowed';
-    } else if (error.response && error.response.status === 404) {
-      // No livestream configuration found, show placeholder
-      hasActiveStream.value = false;
-      console.log('No active livestream configuration found');
-
-      // Initialize chat functionality with empty uuid
-      document.addEventListener('click', handleClickOutside);
-    } else {
-      console.error('Error fetching stream details:', error);
-    }
   }
+
+  document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
@@ -785,10 +968,6 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.viewer-icon {
-  font-size: 18px;
-}
-
 .viewer-count {
   font-size: 18px;
   font-weight: 700;
@@ -842,14 +1021,9 @@ onUnmounted(() => {
 .chat-header {
   display: flex;
   align-items: center;
-  gap: 12px;
   padding: 20px 24px;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   color: white;
-}
-
-.chat-icon {
-  font-size: 24px;
 }
 
 .chat-title {
@@ -949,13 +1123,6 @@ onUnmounted(() => {
 
 .empty-avatar {
   background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-placeholder {
-  font-size: 20px;
 }
 
 .message-content {
@@ -1021,25 +1188,12 @@ onUnmounted(() => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.send-icon {
-  font-size: 18px;
-  display: inline-block;
-  transition: transform 0.3s ease;
 }
 
 .send-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-}
-
-.send-button:hover .send-icon {
-  transform: scale(1.2);
 }
 
 .send-button:active {
@@ -1072,9 +1226,6 @@ onUnmounted(() => {
 }
 
 .context-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
   padding: 12px 16px;
   border: none;
@@ -1090,10 +1241,6 @@ onUnmounted(() => {
 
 .context-menu-item:last-child {
   border-bottom: none;
-}
-
-.menu-icon {
-  font-size: 16px;
 }
 
 .context-menu-item:hover {
@@ -1159,8 +1306,25 @@ onUnmounted(() => {
     max-height: 5.5em;
   }
 
+  .chat-input-field {
+    flex: 1;
+    min-width: 0;
+  }
+
   .send-text {
-    display: inline;
+    display: none;
+  }
+
+  .send-button {
+    flex-shrink: 0;
+    width: 64px;
+    padding: 14px 8px;
+  }
+
+  .send-button::after {
+    content: '➤';
+    font-size: 18px;
+    display: block;
   }
 
   .show-more-btn {
@@ -1301,12 +1465,25 @@ onUnmounted(() => {
     padding: 16px;
   }
 
+  .chat-input-field {
+    flex: 1;
+    min-width: 0;
+  }
+
   .send-text {
     display: none;
   }
 
   .send-button {
-    padding: 14px 18px;
+    flex-shrink: 0;
+    width: 64px;
+    padding: 14px 8px;
+  }
+
+  .send-button::after {
+    content: '➤';
+    font-size: 18px;
+    display: block;
   }
 
   .message-item {
@@ -1316,10 +1493,6 @@ onUnmounted(() => {
   .user-avatar {
     width: 36px;
     height: 36px;
-  }
-
-  .avatar-placeholder {
-    font-size: 18px;
   }
 }
 
@@ -1374,12 +1547,243 @@ onUnmounted(() => {
   }
 
   .chat-input-field {
+    flex: 1;
+    min-width: 0;
     padding: 12px 14px;
     font-size: 14px;
   }
 
   .send-button {
+    flex-shrink: 0;
+    width: 56px;
+    padding: 12px 8px;
+  }
+
+  .send-button::after {
+    content: '➤';
+    font-size: 16px;
+    display: block;
+  }
+}
+
+/* 新增样式 - 登录提示横幅 */
+.login-prompt-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-bottom: 2px solid #f59e0b;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.login-prompt-banner .prompt-icon {
+  font-size: 18px;
+}
+
+.btn-login-small {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.btn-login-small:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* 无直播提示样式 */
+.no-stream-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 24px 24px 0 0;
+  padding: 40px;
+  text-align: center;
+  color: white;
+}
+
+.no-stream-placeholder h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #f1f5f9;
+}
+
+.no-stream-placeholder p {
+  font-size: 16px;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 权限拒绝页面 */
+.access-denied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+  border-radius: 24px 24px 0 0;
+  padding: 40px;
+  text-align: center;
+  color: white;
+}
+
+.access-denied h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: #fef2f2;
+}
+
+.access-denied p {
+  font-size: 18px;
+  color: #fecaca;
+  margin: 0 0 28px 0;
+  line-height: 1.6;
+}
+
+.btn-login-large {
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+}
+
+.btn-login-large:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.5);
+}
+
+/* 可见性徽章 */
+.badge-public,
+.badge-member {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 12px;
+}
+
+.badge-public {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.badge-member {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* 匿名徽章 */
+.anonymous-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* 登录提示框 */
+.login-prompt-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.btn-login-inline {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-login-inline:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* 响应式调整 */
+@media (max-width: 767px) {
+  .login-prompt-banner {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .access-denied {
+    min-height: 300px;
+    padding: 30px 20px;
+  }
+
+  .access-denied h2 {
+    font-size: 24px;
+  }
+
+  .access-denied p {
+    font-size: 15px;
+  }
+
+  .badge-public,
+  .badge-member {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-left: 8px;
+  }
+
+  .anonymous-badge {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .login-prompt-box {
+    gap: 8px;
     padding: 12px 16px;
+    font-size: 13px;
   }
 }
 </style>

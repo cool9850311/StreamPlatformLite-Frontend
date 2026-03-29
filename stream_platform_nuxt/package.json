@@ -7,7 +7,12 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report --port 9323",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
@@ -21,5 +26,11 @@
     "vue": "latest",
     "vue-i18n": "^9.9.1",
     "vue-router": "latest"
+  },
+  "devDependencies": {
+    "@nuxt/test-utils": "^3.19.1",
+    "@playwright/test": "^1.58.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "jsonwebtoken": "^9.0.3"
   }
 }
