@@ -5,7 +5,8 @@
     "manage_livestreams": "管理直播",
     "manage_accounts": "管理帳號",
     "account": "帳號",
-    "logout": "登出"
+    "logout": "登出",
+    "login": "登入"
   },
   "account": {
     "change_password": "更改密碼",
@@ -22,6 +23,8 @@
     "discord_button": "使用 Discord 登入",
     "native_login": "本地帳號登入",
     "or": "或",
+    "view_public_stream": "查看公開直播",
+    "or_login": "或登入以使用更多功能",
     "error": {
       "invalid_state": "安全驗證失敗，請重新登入。"
     }
@@ -122,6 +125,15 @@
     "viewers": "觀眾人數",
     "show_more": "查看更多",
     "show_less": "收起",
+    "public": "公開",
+    "member_only": "僅限會員",
+    "member_only_prompt": "這是會員專屬直播。請登入以使用完整功能。",
+    "member_only_title": "會員專屬直播",
+    "member_only_message": "您需要登入才能觀看此直播。",
+    "login_now": "立即登入",
+    "login_to_watch": "登入觀看",
+    "no_active_stream": "目前沒有活躍的直播",
+    "check_back_later": "請稍後再回來查看。",
     "no_stream": {
       "title": "目前沒有直播",
       "message": "目前沒有可用的直播，請稍後再回來查看！"
@@ -135,6 +147,10 @@
       "send": "發送",
       "delete": "刪除",
       "mute": "禁言",
+      "anonymous": "訪客",
+      "login_required": "請登入後再發送訊息",
+      "login_to_chat": "登入以參與聊天",
+      "login": "登入",
       "not_allowed": "您無法在此聊天室發送訊息。您可能被禁言或封鎖。",
       "message_deleted": "訊息已成功刪除。",
       "delete_failed": "刪除訊息失敗",

@@ -4,7 +4,6 @@
       <div class="manage-accounts-card">
         <!-- Header Section -->
         <div class="manage-accounts-header">
-          <div class="header-icon">👥</div>
           <div class="header-content">
             <h1 class="manage-accounts-title">{{ $t('manage_accounts.title') }}</h1>
           </div>
@@ -16,13 +15,11 @@
         <form @submit.prevent="createAccount" class="create-account-form">
           <div class="form-section">
             <h2 class="section-title">
-              <span class="section-icon">➕</span>
               {{ $t('manage_accounts.create_button') }}
             </h2>
 
             <div class="form-group">
               <label for="username" class="form-label">
-                <span class="label-icon">👤</span>
                 {{ $t('manage_accounts.username') }}
               </label>
               <input
@@ -37,7 +34,6 @@
 
             <div class="form-group">
               <label for="role" class="form-label">
-                <span class="label-icon">🎭</span>
                 {{ $t('manage_accounts.role') }}
               </label>
               <select v-model="newAccount.role" id="role" class="form-control select-control">
@@ -49,7 +45,6 @@
           </div>
 
           <button type="submit" class="submit-button">
-            <span class="btn-icon">✨</span>
             {{ $t('manage_accounts.create_button') }}
           </button>
         </form>
@@ -57,7 +52,6 @@
         <!-- Account Created Info -->
         <div v-if="accountInfo" class="result-card">
           <div class="result-header">
-            <span class="result-icon">✅</span>
             <h3 class="result-title">{{ $t('manage_accounts.account_created') }}</h3>
           </div>
           <div class="result-content">
@@ -82,13 +76,11 @@
         <!-- Delete Account Section -->
         <div class="delete-section">
           <h2 class="section-title">
-            <span class="section-icon">🗑️</span>
             {{ $t('manage_accounts.delete_button') }}
           </h2>
 
           <div class="form-group">
             <label for="accountList" class="form-label">
-              <span class="label-icon">📋</span>
               {{ $t('manage_accounts.account_list') }}
             </label>
             <select v-model="selectedAccount" id="accountList" class="form-control select-control">
@@ -99,7 +91,6 @@
           </div>
 
           <button @click="deleteAccount" class="delete-button" :disabled="!selectedAccount">
-            <span class="btn-icon">🗑️</span>
             {{ $t('manage_accounts.delete_button') }}
           </button>
         </div>
@@ -293,25 +284,9 @@ export default {
 
 /* Header Section */
 .manage-accounts-header {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
   margin-bottom: 32px;
   padding-bottom: 24px;
   border-bottom: 2px solid #e2e8f0;
-}
-
-.header-icon {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-  flex-shrink: 0;
 }
 
 .header-content {
@@ -331,17 +306,10 @@ export default {
 }
 
 .section-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   font-size: 18px;
   font-weight: 600;
   color: #1e293b;
   margin: 0 0 20px 0;
-}
-
-.section-icon {
-  font-size: 20px;
 }
 
 .form-group {
@@ -349,17 +317,11 @@ export default {
 }
 
 .form-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   font-weight: 600;
   font-size: 14px;
   color: #334155;
   margin-bottom: 8px;
-}
-
-.label-icon {
-  font-size: 16px;
+  display: block;
 }
 
 .form-control {
@@ -400,26 +362,12 @@ export default {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.btn-icon {
-  font-size: 20px;
-  display: inline-block;
-  transition: transform 0.3s ease;
 }
 
 .submit-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-}
-
-.submit-button:hover .btn-icon {
-  transform: scale(1.2);
 }
 
 .submit-button:active {
@@ -449,14 +397,7 @@ export default {
 }
 
 .result-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   margin-bottom: 16px;
-}
-
-.result-icon {
-  font-size: 24px;
 }
 
 .result-title {
@@ -525,20 +466,12 @@ export default {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .delete-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
-}
-
-.delete-button:hover:not(:disabled) .btn-icon {
-  transform: scale(1.2);
 }
 
 .delete-button:active:not(:disabled) {
@@ -560,18 +493,6 @@ export default {
 
   .manage-accounts-card {
     padding: 28px 20px;
-  }
-
-  .manage-accounts-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .header-icon {
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
   }
 
   .manage-accounts-title {

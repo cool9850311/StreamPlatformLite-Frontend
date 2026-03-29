@@ -5,7 +5,8 @@
     "manage_livestreams": "ライブ配信管理",
     "manage_accounts": "アカウント管理",
     "account": "アカウント",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "login": "ログイン"
   },
   "account": {
     "change_password": "パスワード変更",
@@ -22,6 +23,8 @@
     "discord_button": "Discordでログイン",
     "native_login": "アカウントログイン",
     "or": "または",
+    "view_public_stream": "公開配信を見る",
+    "or_login": "またはログインしてさらに多くの機能を利用",
     "error": {
       "invalid_state": "セキュリティ検証に失敗しました。もう一度ログインしてください。"
     }
@@ -122,6 +125,15 @@
     "viewers": "視聴者数",
     "show_more": "もっと見る",
     "show_less": "閉じる",
+    "public": "公開",
+    "member_only": "メンバー限定",
+    "member_only_prompt": "これはメンバー限定配信です。すべての機能を利用するにはログインしてください。",
+    "member_only_title": "メンバー限定配信",
+    "member_only_message": "この配信を視聴するにはログインが必要です。",
+    "login_now": "ログイン",
+    "login_to_watch": "ログインして視聴",
+    "no_active_stream": "配信はありません",
+    "check_back_later": "後ほど再度ご確認ください。",
     "no_stream": {
       "title": "配信はありません",
       "message": "現在利用可能なライブ配信がありません。後ほどご確認ください！"
@@ -135,6 +147,10 @@
       "send": "送信",
       "delete": "削除",
       "mute": "ミュート",
+      "anonymous": "匿名",
+      "login_required": "メッセージを送信するにはログインしてください",
+      "login_to_chat": "ログインしてチャットに参加",
+      "login": "ログイン",
       "not_allowed": "このチャットでメッセージを送信できません。ミュートまたはバンされている可能性があります。",
       "message_deleted": "メッセージが正常に削除されました。",
       "delete_failed": "メッセージの削除に失敗しました",

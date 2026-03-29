@@ -3,7 +3,6 @@
     <div class="settings-container">
       <div class="settings-card">
         <div class="settings-header">
-          <div class="header-icon">⚙️</div>
           <div class="header-content">
             <h1 class="settings-title">{{ $t('system_settings.title') }}</h1>
           </div>
@@ -15,7 +14,6 @@
           <div class="form-section">
             <div class="form-group">
               <label for="editorRoleId" class="form-label">
-                <span class="label-icon">👑</span>
                 {{ $t('system_settings.moderator_role_id') }}
               </label>
               <input
@@ -29,7 +27,6 @@
 
             <div class="form-group">
               <label for="streamAccessRoleIds" class="form-label">
-                <span class="label-icon">🎫</span>
                 {{ $t('system_settings.stream_access_role_ids') }}
               </label>
               <textarea
@@ -44,7 +41,6 @@
           </div>
 
           <button type="submit" class="submit-button">
-            <span class="btn-icon">💾</span>
             {{ $t('system_settings.save_button') }}
           </button>
         </form>
@@ -189,25 +185,9 @@ export default {
 }
 
 .settings-header {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
   margin-bottom: 32px;
   padding-bottom: 24px;
   border-bottom: 2px solid #e2e8f0;
-}
-
-.header-icon {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-  flex-shrink: 0;
 }
 
 .header-content {
@@ -230,17 +210,11 @@ export default {
 }
 
 .form-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   font-weight: 600;
   font-size: 14px;
   color: #334155;
   margin-bottom: 8px;
-}
-
-.label-icon {
-  font-size: 16px;
+  display: block;
 }
 
 .form-control {
@@ -295,26 +269,12 @@ export default {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.btn-icon {
-  font-size: 20px;
-  display: inline-block;
-  transition: transform 0.3s ease;
 }
 
 .submit-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-}
-
-.submit-button:hover .btn-icon {
-  transform: scale(1.2);
 }
 
 .submit-button:active {
@@ -325,18 +285,6 @@ export default {
 @media (max-width: 640px) {
   .settings-card {
     padding: 28px 20px;
-  }
-
-  .settings-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .header-icon {
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
   }
 
   .settings-title {

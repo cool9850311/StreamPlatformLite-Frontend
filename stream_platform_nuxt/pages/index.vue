@@ -6,7 +6,9 @@
 
     <div class="login-card">
       <div class="brand-header">
-        <div class="logo">📺</div>
+        <div class="logo">
+          <img src="/logo.png" alt="StreamPlatform Logo" class="logo-image" />
+        </div>
         <h1 class="brand-name">
           StreamPlatform<span class="lite">Lite</span>
         </h1>
@@ -14,8 +16,18 @@
 
       <h2 class="welcome-title">{{ $t('login.title') }}</h2>
 
+      <!-- 新增：查看公开直播按钮 -->
+      <a href="/stream" class="btn-modern btn-public-stream">
+        <span class="btn-icon">🌐</span>
+        {{ $t('login.view_public_stream') }}
+      </a>
+
+      <div class="divider">
+        <span>{{ $t('login.or_login') }}</span>
+      </div>
+
       <a :href="discordLoginUrl" class="btn-modern btn-discord">
-        <span class="btn-icon">🎮</span>
+        <img src="/discord-icon.png" alt="Discord" class="btn-icon-img">
         {{ $t('login.discord_button') }}
       </a>
 
@@ -163,15 +175,17 @@ html {
 .logo {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  border-radius: 20px;
   margin: 0 auto 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
-  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
   animation: bounce 2s ease-in-out infinite;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 @keyframes bounce {
@@ -231,7 +245,18 @@ html {
   transition: transform 0.3s ease;
 }
 
+.btn-icon-img {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
 .btn-modern:hover .btn-icon {
+  transform: scale(1.2);
+}
+
+.btn-modern:hover .btn-icon-img {
   transform: scale(1.2);
 }
 
@@ -303,7 +328,6 @@ html {
   .logo {
     width: 64px;
     height: 64px;
-    font-size: 32px;
   }
 
   .brand-name {
@@ -318,5 +342,22 @@ html {
     padding: 14px 20px;
     font-size: 15px;
   }
+}
+
+/* 新增公开直播按钮样式 */
+.btn-public-stream {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  margin-bottom: 16px;
+}
+
+.btn-public-stream:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-public-stream:active {
+  transform: translateY(0);
 }
 </style>
