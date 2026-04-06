@@ -6,7 +6,7 @@
 
     <div class="login-card">
       <div class="brand-header">
-        <div class="logo">📺</div>
+        <div class="logo"></div>
         <h1 class="brand-name">
           StreamPlatform<span class="lite">Lite</span>
         </h1>
@@ -19,7 +19,6 @@
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
           <label for="username" class="form-label">
-            <span class="label-icon">👤</span>
             {{ $t('native_login.username') }}
           </label>
           <input
@@ -34,7 +33,6 @@
 
         <div class="form-group">
           <label for="password" class="form-label">
-            <span class="label-icon">🔒</span>
             {{ $t('native_login.password') }}
           </label>
           <input
@@ -48,14 +46,12 @@
         </div>
 
         <button type="submit" class="btn-submit">
-          <span class="btn-icon">🚀</span>
           {{ $t('native_login.login_button') }}
         </button>
       </form>
 
       <div class="back-link-container">
         <a href="/" class="back-link">
-          <span>←</span>
           {{ $t('native_login.back_to_home') }}
         </a>
       </div>
