@@ -898,10 +898,12 @@ onUnmounted(() => {
   width: 100%;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border-radius: 24px 24px 0 0;
+  overflow: hidden;
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
   padding: 40px;
 }
 
@@ -1275,8 +1277,9 @@ onUnmounted(() => {
 
   .video-container {
     border-radius: 24px 0 0 0;
-    flex: 1;
-    min-height: 0;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    flex-shrink: 0;
   }
 
   .video-container video {
@@ -1287,8 +1290,9 @@ onUnmounted(() => {
 
   .no-stream-placeholder {
     border-radius: 24px 0 0 0;
-    flex: 1;
-    min-height: 0;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    flex-shrink: 0;
   }
 
   .stream-details {
@@ -1356,6 +1360,7 @@ onUnmounted(() => {
   .video-container {
     border-radius: 24px 24px 0 0;
     aspect-ratio: 16 / 9;
+    width: 100%;
   }
 
   .video-container video {
@@ -1367,7 +1372,7 @@ onUnmounted(() => {
   .no-stream-placeholder {
     border-radius: 24px 24px 0 0;
     aspect-ratio: 16 / 9;
-    min-height: 250px;
+    width: 100%;
   }
 
   .placeholder-title {
@@ -1507,11 +1512,14 @@ onUnmounted(() => {
 
   .video-container {
     border-radius: 20px 20px 0 0;
+    aspect-ratio: 16 / 9;
+    width: 100%;
   }
 
   .no-stream-placeholder {
     border-radius: 20px 20px 0 0;
-    min-height: 200px;
+    aspect-ratio: 16 / 9;
+    width: 100%;
     padding: 30px 20px;
   }
 
@@ -1601,20 +1609,7 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
-/* 无直播提示样式 */
-.no-stream-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  border-radius: 24px 24px 0 0;
-  padding: 40px;
-  text-align: center;
-  color: white;
-}
-
+/* 无直播提示内容样式 */
 .no-stream-placeholder h2 {
   font-size: 28px;
   font-weight: 700;
