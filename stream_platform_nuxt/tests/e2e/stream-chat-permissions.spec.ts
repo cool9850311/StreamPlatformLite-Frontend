@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { StreamPage } from '../page-objects/stream-page';
 import { JWTHelper } from '../helpers/jwt-helper';
+import Redis from 'ioredis';
 
 /**
  * Comprehensive E2E Tests for Chat Permissions
@@ -25,7 +26,28 @@ import { JWTHelper } from '../helpers/jwt-helper';
  * - Public livestream exists
  */
 
+// Helper function to clear rate limits before tests that send messages
+async function clearRateLimits() {
+  const redis = new Redis({
+    host: 'localhost',
+    port: 6379,
+    db: 0,
+  });
+  try {
+    const keys = await redis.keys('rate_limit:*');
+    if (keys.length > 0) {
+      await redis.del(...keys);
+    }
+  } finally {
+    await redis.quit();
+  }
+}
+
 test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
+  // Clear rate limits before each test to prevent interference from rate limit tests
+  test.beforeEach(async () => {
+    await clearRateLimits();
+  });
   test('Editor can see and delete User messages', async ({ browser }) => {
     const jwtHelper = new JWTHelper();
 
@@ -283,6 +305,11 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
 });
 
 test.describe('Chat Permissions - Editor Mute Permissions', () => {
+  // Clear rate limits before each test
+  test.beforeEach(async () => {
+    await clearRateLimits();
+  });
+
   test('Editor can see and mute User', async ({ browser }) => {
     const jwtHelper = new JWTHelper();
 
@@ -491,6 +518,11 @@ test.describe('Chat Permissions - Editor Mute Permissions', () => {
 });
 
 test.describe('Chat Permissions - Admin Permissions', () => {
+  // Clear rate limits before each test
+  test.beforeEach(async () => {
+    await clearRateLimits();
+  });
+
   test('Admin can delete any message including other Admins', async ({ browser }) => {
     const jwtHelper = new JWTHelper();
 
@@ -728,6 +760,11 @@ test.describe('Chat Permissions - Admin Permissions', () => {
 });
 
 test.describe('Chat Permissions - Context Menu Logic', () => {
+  // Clear rate limits before each test
+  test.beforeEach(async () => {
+    await clearRateLimits();
+  });
+
   test('User only sees context menu on own messages', async ({ browser }) => {
     const jwtHelper = new JWTHelper();
 

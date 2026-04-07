@@ -92,6 +92,10 @@ async function handleLogin() {
     }
   } catch (error) {
     const axiosError = error as AxiosError<{ message: string }>;
+    if (axiosError.response && axiosError.response.status === 429) {
+      notification.value.showNotification(t('errors.rate_limit'), 'error');
+      return;
+    }
     console.error('Error logging in:', axiosError);
     const errorMessage = axiosError.response?.data?.message ||
                         axiosError.message ||

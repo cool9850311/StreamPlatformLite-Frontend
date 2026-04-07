@@ -57,6 +57,17 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['setup-member-only'],
     },
+    {
+      name: 'rate-limit-setup',
+      testMatch: '**/rate-limit-setup.ts',
+      dependencies: ['setup-public'],
+    },
+    {
+      name: 'rate-limit-tests',
+      testMatch: '**/rate-limit.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['rate-limit-setup'],
+    },
   ],
   webServer: {
     command: 'npm run dev',

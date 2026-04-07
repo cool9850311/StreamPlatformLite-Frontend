@@ -126,6 +126,10 @@ export default {
           credentials: 'include',
           body: JSON.stringify(this.changePasswordRequest)
         });
+        if (response.status === 429) {
+          this.$refs.notificationRef.showNotification(this.$t('errors.rate_limit'), 'error');
+          return;
+        }
         if (response.ok) {
           this.$refs.notificationRef.showNotification(this.$t('account.success'), 'success');
           // Clear form
