@@ -180,5 +180,8 @@
       "fetch": "Failed to fetch settings",
       "general": "Error saving settings: {message}"
     }
+  },
+  "errors": {
+    "rate_limit": "Please try again later."
   }
 }

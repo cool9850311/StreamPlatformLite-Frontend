@@ -180,5 +180,8 @@
       "fetch": "取得設定失敗",
       "general": "儲存設定時發生錯誤：{message}"
     }
+  },
+  "errors": {
+    "rate_limit": "请稍后再试。"
   }
 }

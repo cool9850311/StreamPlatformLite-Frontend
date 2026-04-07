@@ -39,8 +39,10 @@ export class JWTHelper {
     return this.generateToken(2, editorId, username);
   }
 
-  generateUserToken(): string {
-    return this.generateToken(3, 'test-user', 'Test User');
+  generateUserToken(userId?: string): string {
+    const theUserId = userId || 'test-user';
+    const username = userId ? `User ${userId}` : 'Test User';
+    return this.generateToken(3, theUserId, username);
   }
 
   generateGuestToken(): string {

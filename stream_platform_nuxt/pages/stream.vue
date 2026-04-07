@@ -263,6 +263,10 @@ const sendMessage = async () => {
 
     newMessage.value = '';
   } catch (error) {
+    if (error.response && error.response.status === 429) {
+      notification.value.showNotification($t('errors.rate_limit'), 'error');
+      return;
+    }
     if (error.response && error.response.status === 403) {
       console.error('You are not allowed to send messages in this chat.');
       notification.value.showNotification($t('stream.chat.not_allowed'), 'error');
@@ -321,6 +325,10 @@ const deleteMessage = async (message) => {
       notification.value.showNotification($t('stream.chat.delete_failed'), 'error');
     }
   } catch (error) {
+    if (error.response && error.response.status === 429) {
+      notification.value.showNotification($t('errors.rate_limit'), 'error');
+      return;
+    }
     console.error('Error deleting message:', error);
     notification.value.showNotification($t('stream.chat.delete_failed'), 'error');
   }
