@@ -11,10 +11,13 @@ export class StreamPage {
     // completes the /livestream/one call before we start listening.
     // Accept any status (200 for public, 401 for unauthorized member-only) to
     // prevent orphaned promise when test ends without calling waitForStreamData().
+    // .catch(()=>null): silences "Test ended" / timeout rejections that occur when the
+    // page does not call /livestream/one at all (e.g. guest on member-only stream in
+    // Nuxt 4 where the access-denied UI renders from client-side state without an API call).
     this._streamDataPromise = this.page.waitForResponse(
       response => response.url().includes('/livestream/one'),
       { timeout: 15000 }
-    );
+    ).catch(() => null);
     await this.page.goto('/stream');
   }
 
@@ -27,6 +30,18 @@ export class StreamPage {
     if (this._streamDataPromise) {
       const result = await this._streamDataPromise;
       this._streamDataPromise = null;
+      // null means /livestream/one was never called (e.g. page cached the data
+      // client-side and skipped the request). Any caller that actually needs the
+      // response will get a meaningful failure here rather than a cryptic TypeError
+      // later when it tries response.json() / response.status() on null.
+      if (result === null) {
+        throw new Error(
+          'waitForStreamData: /livestream/one was never called — the page may have ' +
+          'rendered from client-side state without hitting the API. ' +
+          'If this is expected (e.g. access-denied without API call), ' +
+          'do not call waitForStreamData() in this test.'
+        );
+      }
       return result;
     }
     // Fallback for callers that invoke waitForStreamData() without navigate()
