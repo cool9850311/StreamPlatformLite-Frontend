@@ -431,34 +431,21 @@ const initializeHls = (video, streamURL) => {
 
     // 正确的初始化顺序：先 attachMedia，等待 MEDIA_ATTACHED，再 loadSource
     player.on('ready', () => {
-      console.log('🎬 Plyr ready, waiting before attaching media...');
       // 延迟一下，确保所有东西都准备好
       setTimeout(() => {
-        console.log('🔗 Attaching media to HLS...');
         hls.attachMedia(video);
       }, 100);
     });
 
     // 等待 HLS 与 video 绑定完成后，再载入来源
     hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-      console.log('✅ HLS: MEDIA_ATTACHED - now loading source');
       hls.loadSource(streamURL);
       // 手动开始载入
       hls.startLoad();
     });
 
-    // Debug: Log all HLS events
-    hls.on(Hls.Events.MANIFEST_LOADING, () => {
-      console.log('🔵 HLS: MANIFEST_LOADING');
-    });
-
-    hls.on(Hls.Events.MANIFEST_LOADED, (event, data) => {
-      console.log('🟢 HLS: MANIFEST_LOADED', data);
-    });
-
     // Clear retry interval when manifest is successfully parsed
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      console.log('✅ HLS: MANIFEST_PARSED - ready to play');
       // 成功載入manifest，顯示播放器
       hasActiveStream.value = true;
       if (retryInterval) {
@@ -491,7 +478,6 @@ const initializeHls = (video, streamURL) => {
               hasActiveStream.value = false;
               if (!retryInterval) {
                 retryInterval = setInterval(() => {
-                  console.log('Retrying to load source...');
                   hls.loadSource(streamURL);
                   hls.startLoad();
                 }, 1000);
@@ -748,7 +734,6 @@ onUnmounted(() => {
   // Cleanup player and hls instance - 确保彻底销毁
   if (playerInstance) {
     if (playerInstance.hls) {
-      console.log('🧹 Cleaning up: detaching media and destroying HLS instance');
       try {
         // 先 detach 再 destroy，确保清理干净
         playerInstance.hls.detachMedia();

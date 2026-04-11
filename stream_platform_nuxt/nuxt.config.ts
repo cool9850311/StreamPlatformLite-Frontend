@@ -32,6 +32,9 @@ export default defineNuxtConfig({
           fileURLToPath(new URL('./i18n/locales/**', import.meta.url))
         ]
       })
-    ]
+    ],
+    esbuild: {
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
+    }
   }
 })
