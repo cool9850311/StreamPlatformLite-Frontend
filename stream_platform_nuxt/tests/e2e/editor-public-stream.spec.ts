@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { StreamPage } from '../page-objects/stream-page';
 import { JWTHelper } from '../helpers/jwt-helper';
+import { COOKIE_DOMAIN } from '../helpers/test-config';
 
 /**
  * Scenario: Editor User Accessing Public Livestream
@@ -27,7 +28,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -52,7 +53,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -77,7 +78,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -106,7 +107,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -136,7 +137,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await userContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -155,7 +156,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -189,7 +190,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await guestContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateGuestToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -208,7 +209,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -242,7 +243,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await adminContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -261,7 +262,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -322,7 +323,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await editor1Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken('editor-001'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -341,7 +342,7 @@ test.describe('Editor User - Public Livestream Access', () => {
     await editor2Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken('editor-002'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 

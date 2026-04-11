@@ -1,5 +1,6 @@
 import { test } from '@playwright/test';
 import Redis from 'ioredis';
+import { REDIS_PORT } from '../helpers/test-config';
 
 /**
  * Rate Limit Setup
@@ -12,7 +13,7 @@ test('clear rate limit counters', async () => {
 
   const redis = new Redis({
     host: 'localhost',
-    port: 6379,
+    port: REDIS_PORT,
     db: 0,
   });
 

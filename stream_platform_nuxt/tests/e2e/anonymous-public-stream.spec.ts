@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { StreamPage } from '../page-objects/stream-page';
+import { API_BASE } from '../helpers/test-config';
 
 /**
  * 场景 1: Anonymous 用户访问 Public 直播
@@ -89,7 +90,7 @@ test.describe('Anonymous User - Public Stream Access', () => {
 
     // 访问 /livestream/chat/delete/{uuid} 端点
     const deleteResponse = await page.request.get(
-      `http://localhost:8080/livestream/chat/delete/${livestreamUUID}`,
+      `${API_BASE}/livestream/chat/delete/${livestreamUUID}`,
       { failOnStatusCode: false }
     );
 

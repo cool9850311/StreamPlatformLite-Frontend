@@ -2,6 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 
 const TEST_MODE = process.env.TEST_MODE || 'development';
 
+// Allow Node.js fetch() in test workers to trust mkcert self-signed certs
+if (TEST_MODE === 'production-https') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { StreamPage } from '../page-objects/stream-page';
 import { JWTHelper } from '../helpers/jwt-helper';
+import { COOKIE_DOMAIN } from '../helpers/test-config';
 
 /**
  * Scenario: User Accessing MemberOnly Livestream
@@ -23,7 +24,7 @@ test.describe('User - MemberOnly Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -57,7 +58,7 @@ test.describe('User - MemberOnly Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -94,7 +95,7 @@ test.describe('User - MemberOnly Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 

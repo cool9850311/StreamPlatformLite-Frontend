@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { JWTHelper } from '../helpers/jwt-helper';
+import { COOKIE_DOMAIN } from '../helpers/test-config';
 
 /**
  * Scenario: Admin User Navigation and Role Detection
@@ -31,12 +32,12 @@ test.describe('Admin User - Navigation and Role Detection', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
     // Step 2: Navigate to stream page
-    await page.goto('http://localhost:3000/stream');
+    await page.goto('/stream');
 
     // Step 3: Wait for /me API call and capture response
     const meResponse = await page.waitForResponse(
@@ -77,12 +78,12 @@ test.describe('Admin User - Navigation and Role Detection', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
     // Step 2: Navigate to stream page
-    await page.goto('http://localhost:3000/stream');
+    await page.goto('/stream');
 
     // Step 3: Wait for /me API call and capture response
     const meResponse = await page.waitForResponse(
@@ -123,12 +124,12 @@ test.describe('Admin User - Navigation and Role Detection', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
     // Step 2: Navigate to stream page
-    await page.goto('http://localhost:3000/stream');
+    await page.goto('/stream');
 
     // Step 3: Wait for /me API call and capture response
     const meResponse = await page.waitForResponse(
@@ -162,12 +163,12 @@ test.describe('Admin User - Navigation and Role Detection', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateGuestToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
     // Step 2: Navigate to stream page
-    await page.goto('http://localhost:3000/stream');
+    await page.goto('/stream');
 
     // Step 3: Wait for /me API call and capture response
     const meResponse = await page.waitForResponse(
@@ -205,12 +206,12 @@ test.describe('Admin User - Navigation and Role Detection', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
     // Step 2: Navigate to any page
-    await page.goto('http://localhost:3000/stream');
+    await page.goto('/stream');
 
     // Step 3: Wait for /me API response
     const meResponse = await page.waitForResponse(

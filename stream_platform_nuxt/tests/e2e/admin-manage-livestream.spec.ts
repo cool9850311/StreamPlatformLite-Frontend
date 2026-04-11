@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { ManageLivestreamPage } from '../page-objects/manage-livestream-page';
 import { JWTHelper } from '../helpers/jwt-helper';
+import { COOKIE_DOMAIN } from '../helpers/test-config';
 
 /**
  * Scenario: Admin User Managing Livestream Visibility
@@ -29,7 +30,7 @@ test.describe('Admin User - Manage Livestream Visibility', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -82,7 +83,7 @@ test.describe('Admin User - Manage Livestream Visibility', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -132,7 +133,7 @@ test.describe('Admin User - Manage Livestream Visibility', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -199,7 +200,7 @@ test.describe('Admin User - Manage Livestream Visibility', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -270,7 +271,7 @@ test.describe('Admin User - Manage Livestream Visibility', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -367,7 +368,7 @@ test.describe('Admin User - Existing Livestream Data Display', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -485,7 +486,7 @@ test.describe('Admin User - Existing Livestream Data Display', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -539,7 +540,7 @@ test.describe('Admin User - Existing Livestream Data Display', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
