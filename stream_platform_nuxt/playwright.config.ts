@@ -1,7 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const TEST_MODE = process.env.TEST_MODE || 'development';
+
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: './tests',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -9,7 +11,8 @@ export default defineConfig({
   reporter: 'html',
   globalSetup: './tests/e2e/global-setup.ts',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: TEST_MODE === 'production-https' ? 'https://localtest.me' : 'http://localhost:3000',
+    ignoreHTTPSErrors: TEST_MODE === 'production-https',
     trace: 'on',
     screenshot: 'on',
     video: 'on',
@@ -18,58 +21,67 @@ export default defineConfig({
     {
       name: 'admin-manage-tests',
       testMatch: [
-        '**/admin-navigation.spec.ts',
-        '**/admin-manage-livestream.spec.ts'
+        '**/e2e/admin-navigation.spec.ts',
+        '**/e2e/admin-manage-livestream.spec.ts'
       ],
       use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'setup-public',
-      testMatch: '**/public-setup.ts',
+      testMatch: '**/e2e/public-setup.ts',
       dependencies: ['admin-manage-tests'],
     },
     {
       name: 'public-stream-tests',
       testMatch: [
-        '**/anonymous-public-stream.spec.ts',
-        '**/guest-public-stream.spec.ts',
-        '**/user-public-stream.spec.ts',
-        '**/editor-public-stream.spec.ts',
-        '**/admin-public-stream.spec.ts',
-        '**/stream-chat-permissions.spec.ts'
+        '**/e2e/anonymous-public-stream.spec.ts',
+        '**/e2e/guest-public-stream.spec.ts',
+        '**/e2e/user-public-stream.spec.ts',
+        '**/e2e/editor-public-stream.spec.ts',
+        '**/e2e/admin-public-stream.spec.ts',
+        '**/e2e/stream-chat-permissions.spec.ts'
       ],
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['setup-public'],
     },
     {
       name: 'setup-member-only',
-      testMatch: '**/member-only-setup.ts',
+      testMatch: '**/e2e/member-only-setup.ts',
       dependencies: ['public-stream-tests'],
     },
     {
       name: 'member-only-stream-tests',
       testMatch: [
-        '**/anonymous-member-only-stream.spec.ts',
-        '**/guest-member-only-stream.spec.ts',
-        '**/user-member-only-stream.spec.ts',
-        '**/editor-member-only-stream.spec.ts'
+        '**/e2e/anonymous-member-only-stream.spec.ts',
+        '**/e2e/guest-member-only-stream.spec.ts',
+        '**/e2e/user-member-only-stream.spec.ts',
+        '**/e2e/editor-member-only-stream.spec.ts'
       ],
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['setup-member-only'],
     },
     {
       name: 'rate-limit-setup',
-      testMatch: '**/rate-limit-setup.ts',
+      testMatch: '**/e2e/rate-limit-setup.ts',
       dependencies: ['setup-public'],
     },
     {
       name: 'rate-limit-tests',
-      testMatch: '**/rate-limit.spec.ts',
+      testMatch: '**/e2e/rate-limit.spec.ts',
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['rate-limit-setup'],
     },
+    {
+      name: 'security-headers-tests',
+      testMatch: '**/security/security-headers.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: TEST_MODE === 'production-https' ? 'https://localtest.me' : 'http://localhost:3000',
+        ignoreHTTPSErrors: TEST_MODE === 'production-https',
+      },
+    },
   ],
-  webServer: {
+  webServer: TEST_MODE === 'production-https' ? undefined : {
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,

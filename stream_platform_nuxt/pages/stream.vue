@@ -396,6 +396,8 @@ const pollDeletedMessages = async () => {
 const initializeHls = (video, streamURL) => {
   // Initialize Plyr with basic controls
   const player = new Plyr(video, {
+    iconUrl: '/plyr.svg',
+    blankVideo: '',
     controls: [
       'play-large',
       'play',
