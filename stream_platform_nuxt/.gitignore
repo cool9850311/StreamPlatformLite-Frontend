@@ -26,5 +26,7 @@ logs
 # Playwright test outputs
 test-results/
 playwright-report/
+playwright-report-dev/
 playwright/.cache/
 playwright-report-auto-refresh.html
+e2e-test-output.log

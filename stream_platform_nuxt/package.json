@@ -12,7 +12,10 @@
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report --port 9323",
     "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug"
+    "test:debug": "playwright test --debug",
+    "test:https": "TEST_MODE=production-https playwright test",
+    "test:security": "TEST_MODE=production-https playwright test --project=security-headers-tests",
+    "test:https:report": "playwright show-report --port 9324"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
@@ -33,6 +36,7 @@
     "@types/ioredis": "^4.28.10",
     "@types/jsonwebtoken": "^9.0.10",
     "ioredis": "^5.10.1",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "nuxt-security": "^2.5.1"
   }
 }

@@ -1,6 +1,14 @@
 import { JWTHelper } from '../helpers/jwt-helper';
 
-const API_BASE_URL = 'http://localhost:8080';
+const TEST_MODE = process.env.TEST_MODE || 'development';
+const API_BASE_URL = TEST_MODE === 'production-https'
+  ? 'https://localtest.me/api'
+  : 'http://localhost:8080';
+
+// Allow self-signed mkcert certificates in HTTPS mode
+if (TEST_MODE === 'production-https') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
 
 export default async function globalSetup() {
   console.log('\n🚀 Global Setup: Resetting test environment...\n');
@@ -66,8 +74,17 @@ export default async function globalSetup() {
     console.log('   5️⃣  member-only-stream-tests → Tests member-only access');
 
     console.log('\n✨ Global setup completed!\n');
-  } catch (error) {
-    console.error('\n❌ Global setup failed:', error);
-    throw error;
+  } catch (error: unknown) {
+    const isConnRefused = error instanceof Error &&
+      'cause' in error &&
+      (error.cause as { code?: string })?.code === 'ECONNREFUSED';
+
+    if (isConnRefused) {
+      console.warn('\n⚠️  Global setup: backend unreachable (ECONNREFUSED).');
+      console.warn('   Skipping DB reset — OK if running security-headers-tests only.\n');
+    } else {
+      console.error('\n❌ Global setup failed:', error);
+      throw error;
+    }
   }
 }
