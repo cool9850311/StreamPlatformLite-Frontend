@@ -69,6 +69,11 @@ test.describe('Security Headers - Backend', () => {
 });
 
 test.describe('Security Headers - Frontend', () => {
+  // Frontend security headers are injected by Caddy/Nginx only.
+  // Without the proxy stack (production-https mode), there are no security headers
+  // on the frontend — skip the entire describe block in development mode.
+  test.skip(!isHTTPS, 'Frontend security headers require Caddy proxy (production-https mode only)');
+
   test('Frontend should include CSP header', async ({ page }) => {
     const response = await page.goto(FRONTEND_BASE);
     const headers = await response?.headers();
@@ -78,14 +83,13 @@ test.describe('Security Headers - Frontend', () => {
     expect(csp).toContain('script-src');
   });
 
-  test('Frontend CSP script-src should use strict-dynamic with nonce in HTTPS mode', async ({ page }) => {
-    test.skip(!isHTTPS, 'strict-dynamic only tested in HTTPS mode');
-    const response = await page.goto(FRONTEND_BASE);
-    const headers = await response?.headers();
-    const csp = headers?.['content-security-policy'];
-    // strict-dynamic + nonce must be present in script-src
-    expect(csp).toContain("'strict-dynamic'");
-    expect(csp).toMatch(/nonce-[A-Za-z0-9+/=]{8,}/);
+  test('Frontend CSP script-src should allow inline scripts for SPA (unsafe-inline)', async ({ request }) => {
+    // SPA (ssr:false) uses a static CSP via Caddy — dynamic nonces require per-request HTML generation
+    // which is impossible for a pre-built static SPA. 'unsafe-inline' is used instead.
+    const response = await request.get(FRONTEND_BASE + '/');
+    const csp = response.headers()['content-security-policy'];
+    expect(csp).toBeTruthy();
+    expect(csp).toMatch(/script-src[^;]*'unsafe-inline'/);
   });
 
   test('Frontend CSP style-src should use unsafe-inline (not nonce)', async ({ request }) => {
