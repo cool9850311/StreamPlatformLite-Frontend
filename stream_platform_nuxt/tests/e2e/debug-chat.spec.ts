@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { StreamPage } from '../page-objects/stream-page';
 import { JWTHelper } from '../helpers/jwt-helper';
+import { COOKIE_DOMAIN } from '../helpers/test-config';
 
 test('Debug chat message sending for User', async ({ context, page }) => {
   // Listen to console messages
@@ -28,7 +29,7 @@ test('Debug chat message sending for User', async ({ context, page }) => {
   await context.addCookies([{
     name: 'token',
     value: jwtHelper.generateUserToken(),
-    domain: 'localhost',
+    domain: COOKIE_DOMAIN,
     path: '/',
   }]);
 

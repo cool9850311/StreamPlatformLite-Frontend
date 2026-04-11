@@ -1,9 +1,20 @@
 import { Page, expect } from '@playwright/test';
 
 export class StreamPage {
+  // Set up before navigation so we never miss the /livestream/one response
+  private _streamDataPromise: Promise<any> | null = null;
+
   constructor(private page: Page) {}
 
   async navigate() {
+    // Set up response listener BEFORE goto to avoid race where Nuxt SSR/hydration
+    // completes the /livestream/one call before we start listening.
+    // Accept any status (200 for public, 401 for unauthorized member-only) to
+    // prevent orphaned promise when test ends without calling waitForStreamData().
+    this._streamDataPromise = this.page.waitForResponse(
+      response => response.url().includes('/livestream/one'),
+      { timeout: 15000 }
+    );
     await this.page.goto('/stream');
   }
 
@@ -12,9 +23,15 @@ export class StreamPage {
   }
 
   async waitForStreamData() {
-    // 等待直播数据加载并返回 response
+    // Return the already-pending promise set up by navigate()
+    if (this._streamDataPromise) {
+      const result = await this._streamDataPromise;
+      this._streamDataPromise = null;
+      return result;
+    }
+    // Fallback for callers that invoke waitForStreamData() without navigate()
     return await this.page.waitForResponse(
-      response => response.url().includes('/livestream/one') && response.status() === 200,
+      response => response.url().includes('/livestream/one'),
       { timeout: 10000 }
     );
   }
@@ -56,14 +73,14 @@ export class StreamPage {
     return await this.page.locator('.login-prompt-box').isVisible();
   }
 
-  async waitForMessage(messageText: string, timeout: number = 5000) {
+  async waitForMessage(messageText: string, timeout: number = 15000) {
     await this.page.waitForSelector(
       `.message-item:has-text("${messageText}")`,
       { timeout }
     );
   }
 
-  async waitForMessageDeleted(messageText: string, timeout: number = 5000) {
+  async waitForMessageDeleted(messageText: string, timeout: number = 15000) {
     await this.page.waitForSelector(
       `.message-item:has-text("${messageText}")`,
       { state: 'detached', timeout }

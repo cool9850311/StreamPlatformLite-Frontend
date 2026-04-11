@@ -1,5 +1,6 @@
 import { test as base, BrowserContext } from '@playwright/test';
 import { JWTHelper } from '../helpers/jwt-helper';
+import { COOKIE_DOMAIN } from '../helpers/test-config';
 
 type AuthFixtures = {
   adminContext: BrowserContext;
@@ -16,7 +17,7 @@ export const test = base.extend<AuthFixtures>({
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
     await use(context);
@@ -29,7 +30,7 @@ export const test = base.extend<AuthFixtures>({
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
     await use(context);
@@ -42,7 +43,7 @@ export const test = base.extend<AuthFixtures>({
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
     await use(context);
@@ -55,7 +56,7 @@ export const test = base.extend<AuthFixtures>({
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateGuestToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
     await use(context);

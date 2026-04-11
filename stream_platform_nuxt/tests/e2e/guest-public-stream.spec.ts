@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { StreamPage } from '../page-objects/stream-page';
 import { JWTHelper } from '../helpers/jwt-helper';
+import { COOKIE_DOMAIN } from '../helpers/test-config';
 
 /**
  * Scenario 3: Guest User Accessing Public Livestream
@@ -24,7 +25,7 @@ test.describe('Guest User - Public Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateGuestToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -57,7 +58,7 @@ test.describe('Guest User - Public Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateGuestToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -81,7 +82,7 @@ test.describe('Guest User - Public Livestream Access', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateGuestToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 

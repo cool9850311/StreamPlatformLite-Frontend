@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { StreamPage } from '../page-objects/stream-page';
+import { API_BASE } from '../helpers/test-config';
 
 /**
  * 场景 2: Anonymous 用户访问 MemberOnly 直播
@@ -106,7 +107,7 @@ test.describe('Anonymous User - Member Only Stream Access', () => {
   test('should fail to access stream file endpoints', async ({ page }) => {
     // 尝试直接访问流文件端点
     const response = await page.request.get(
-      'http://localhost:8080/livestream/test-uuid/playlist.m3u8',
+      `${API_BASE}/livestream/test-uuid/playlist.m3u8`,
       { failOnStatusCode: false }
     );
 
@@ -118,7 +119,7 @@ test.describe('Anonymous User - Member Only Stream Access', () => {
   test('should fail to access chat endpoints for member_only stream', async ({ page }) => {
     // 尝试访问聊天端点
     const response = await page.request.get(
-      'http://localhost:8080/livestream/chat/test-uuid/0',
+      `${API_BASE}/livestream/chat/test-uuid/0`,
       { failOnStatusCode: false }
     );
 
@@ -129,7 +130,7 @@ test.describe('Anonymous User - Member Only Stream Access', () => {
   test('should fail to access deleted chat IDs endpoint', async ({ page }) => {
     // 尝试访问已删除聊天 ID 端点
     const response = await page.request.get(
-      'http://localhost:8080/livestream/chat/delete/test-uuid',
+      `${API_BASE}/livestream/chat/delete/test-uuid`,
       { failOnStatusCode: false }
     );
 
@@ -140,7 +141,7 @@ test.describe('Anonymous User - Member Only Stream Access', () => {
   test('should fail to send chat message', async ({ page }) => {
     // 尝试发送聊天消息
     const response = await page.request.post(
-      'http://localhost:8080/livestream/chat',
+      `${API_BASE}/livestream/chat`,
       {
         data: {
           stream_uuid: 'test-uuid',
@@ -235,7 +236,7 @@ test.describe('Anonymous User - Member Only Stream Access', () => {
   test('should fail to ping viewer count', async ({ page }) => {
     // 尝试 ping viewer count
     const response = await page.request.get(
-      'http://localhost:8080/livestream/ping-viewer-count/test-uuid',
+      `${API_BASE}/livestream/ping-viewer-count/test-uuid`,
       { failOnStatusCode: false }
     );
 

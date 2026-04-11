@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { StreamPage } from '../page-objects/stream-page';
 import { JWTHelper } from '../helpers/jwt-helper';
 import Redis from 'ioredis';
+import { COOKIE_DOMAIN, REDIS_PORT, API_BASE } from '../helpers/test-config';
 
 /**
  * Comprehensive E2E Tests for Rate Limiting
@@ -32,7 +33,7 @@ import Redis from 'ioredis';
 async function clearRateLimits() {
   const redis = new Redis({
     host: 'localhost',
-    port: 6379,
+    port: REDIS_PORT,
     db: 0,
   });
   try {
@@ -51,7 +52,7 @@ test.describe('Rate Limiting - IP-based endpoints', () => {
     await clearRateLimits();
   });
   test('Login returns 429 after 5 requests', async ({ page }) => {
-    const loginUrl = 'http://localhost:8080/origin-account/login';
+    const loginUrl = `${API_BASE}/origin-account/login`;
     const responses: any[] = [];
 
     // Navigate to page to establish context
@@ -61,8 +62,8 @@ test.describe('Rate Limiting - IP-based endpoints', () => {
     // Make 6 login requests quickly via direct API calls
     // Use same username to avoid different error messages
     for (let i = 0; i < 6; i++) {
-      const response = await page.evaluate(async () => {
-        const res = await fetch('http://localhost:8080/origin-account/login', {
+      const response = await page.evaluate(async (apiBase) => {
+        const res = await fetch(`${apiBase}/origin-account/login`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -77,7 +78,7 @@ test.describe('Rate Limiting - IP-based endpoints', () => {
           status: res.status,
           headers: Object.fromEntries(res.headers.entries()),
         };
-      });
+      }, API_BASE);
 
       responses.push(response);
     }
@@ -103,7 +104,7 @@ test.describe('Rate Limiting - IP-based endpoints', () => {
   });
 
   test('OAuth init returns 429 after 5 requests', async ({ page }) => {
-    const oauthUrl = 'http://localhost:8080/oauth/discord/init';
+    const oauthUrl = `${API_BASE}/oauth/discord/init`;
     const responses: any[] = [];
 
     // Navigate to page to establish context
@@ -112,8 +113,8 @@ test.describe('Rate Limiting - IP-based endpoints', () => {
 
     // Make 6 OAuth init requests quickly via direct API calls
     for (let i = 0; i < 6; i++) {
-      const response = await page.evaluate(async () => {
-        const res = await fetch('http://localhost:8080/oauth/discord/init', {
+      const response = await page.evaluate(async (apiBase) => {
+        const res = await fetch(`${apiBase}/oauth/discord/init`, {
           method: 'GET',
           credentials: 'include',
           redirect: 'manual', // Don't follow redirects
@@ -122,7 +123,7 @@ test.describe('Rate Limiting - IP-based endpoints', () => {
           status: res.status,
           headers: Object.fromEntries(res.headers.entries()),
         };
-      });
+      }, API_BASE);
 
       responses.push(response);
     }
@@ -149,11 +150,11 @@ test.describe('Rate Limiting - IP-based endpoints', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
-    const logoutUrl = 'http://localhost:8080/logout';
+    const logoutUrl = `${API_BASE}/logout`;
     const responses: any[] = [];
 
     // Navigate to a page where logout is available
@@ -168,8 +169,8 @@ test.describe('Rate Limiting - IP-based endpoints', () => {
       );
 
       // Trigger logout via API call
-      const response = await page.evaluate(async () => {
-        const res = await fetch('http://localhost:8080/logout', {
+      const response = await page.evaluate(async (apiBase) => {
+        const res = await fetch(`${apiBase}/logout`, {
           method: 'POST',
           credentials: 'include',
         });
@@ -177,7 +178,7 @@ test.describe('Rate Limiting - IP-based endpoints', () => {
           status: res.status,
           headers: Object.fromEntries(res.headers.entries()),
         };
-      });
+      }, API_BASE);
 
       responses.push(response);
       await page.waitForTimeout(100);
@@ -215,7 +216,7 @@ test.describe('Rate Limiting - UserID-based endpoints', () => {
     await userContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -280,7 +281,7 @@ test.describe('Rate Limiting - UserID-based endpoints', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -294,7 +295,7 @@ test.describe('Rate Limiting - UserID-based endpoints', () => {
     await user1Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken('test-user-1'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -302,7 +303,7 @@ test.describe('Rate Limiting - UserID-based endpoints', () => {
     await user2Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken('test-user-2'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -394,7 +395,7 @@ test.describe('Rate Limiting - UserID-based endpoints', () => {
     await userContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -406,8 +407,8 @@ test.describe('Rate Limiting - UserID-based endpoints', () => {
 
     // Make 11 password change requests
     for (let i = 0; i < 11; i++) {
-      const response = await userPage.evaluate(async () => {
-        const res = await fetch('http://localhost:8080/origin-account/change-password', {
+      const response = await userPage.evaluate(async (apiBase) => {
+        const res = await fetch(`${apiBase}/origin-account/change-password`, {
           method: 'PATCH',
           credentials: 'include',
           headers: {
@@ -422,7 +423,7 @@ test.describe('Rate Limiting - UserID-based endpoints', () => {
           status: res.status,
           headers: Object.fromEntries(res.headers.entries()),
         };
-      });
+      }, API_BASE);
 
       responses.push(response);
       await userPage.waitForTimeout(100);
@@ -455,7 +456,7 @@ test.describe('Rate Limiting - Response validation', () => {
   });
 
   test('429 response includes Retry-After header', async ({ page }) => {
-    const loginUrl = 'http://localhost:8080/origin-account/login';
+    const loginUrl = `${API_BASE}/origin-account/login`;
 
     // Navigate to page to establish context
     await page.goto('/native-login');
@@ -463,8 +464,8 @@ test.describe('Rate Limiting - Response validation', () => {
 
     // Make 6 login requests to trigger rate limit
     for (let i = 0; i < 6; i++) {
-      const response = await page.evaluate(async (index) => {
-        const res = await fetch('http://localhost:8080/origin-account/login', {
+      const response = await page.evaluate(async ({ index, apiBase }) => {
+        const res = await fetch(`${apiBase}/origin-account/login`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -479,7 +480,7 @@ test.describe('Rate Limiting - Response validation', () => {
           status: res.status,
           headers: Object.fromEntries(res.headers.entries()),
         };
-      }, i);
+      }, { index: i, apiBase: API_BASE });
 
       if (response.status === 429) {
         // Verify Retry-After header exists and is a valid number
@@ -495,7 +496,7 @@ test.describe('Rate Limiting - Response validation', () => {
   });
 
   test('429 response includes X-RateLimit headers', async ({ page }) => {
-    const loginUrl = 'http://localhost:8080/origin-account/login';
+    const loginUrl = `${API_BASE}/origin-account/login`;
 
     // Navigate to page to establish context
     await page.goto('/native-login');
@@ -503,8 +504,8 @@ test.describe('Rate Limiting - Response validation', () => {
 
     // Make 6 login requests to trigger rate limit
     for (let i = 0; i < 6; i++) {
-      const response = await page.evaluate(async (index) => {
-        const res = await fetch('http://localhost:8080/origin-account/login', {
+      const response = await page.evaluate(async ({ index, apiBase }) => {
+        const res = await fetch(`${apiBase}/origin-account/login`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -519,7 +520,7 @@ test.describe('Rate Limiting - Response validation', () => {
           status: res.status,
           headers: Object.fromEntries(res.headers.entries()),
         };
-      }, i);
+      }, { index: i, apiBase: API_BASE });
 
       if (response.status === 429) {
         const headers = response.headers;
@@ -557,7 +558,7 @@ test.describe('Rate Limiting - Frontend error display', () => {
     await userContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -595,8 +596,8 @@ test.describe('Rate Limiting - Frontend error display', () => {
 
     // Make 5 login requests first to consume the rate limit
     for (let i = 0; i < 5; i++) {
-      await page.evaluate(async () => {
-        await fetch('http://localhost:8080/origin-account/login', {
+      await page.evaluate(async (apiBase) => {
+        await fetch(`${apiBase}/origin-account/login`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -607,7 +608,7 @@ test.describe('Rate Limiting - Frontend error display', () => {
             password: 'wrongpassword',
           }),
         });
-      });
+      }, API_BASE);
     }
 
     // Now try to login via the actual login form, which should trigger 429 and show notification

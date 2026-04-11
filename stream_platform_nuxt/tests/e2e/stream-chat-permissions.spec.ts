@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { StreamPage } from '../page-objects/stream-page';
 import { JWTHelper } from '../helpers/jwt-helper';
 import Redis from 'ioredis';
+import { COOKIE_DOMAIN, REDIS_PORT } from '../helpers/test-config';
 
 /**
  * Comprehensive E2E Tests for Chat Permissions
@@ -30,7 +31,7 @@ import Redis from 'ioredis';
 async function clearRateLimits() {
   const redis = new Redis({
     host: 'localhost',
-    port: 6379,
+    port: REDIS_PORT,
     db: 0,
   });
   try {
@@ -56,7 +57,7 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
     await userContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -75,7 +76,7 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -115,7 +116,7 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
     await adminContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -134,7 +135,7 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -176,7 +177,7 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -206,7 +207,7 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
     await guestContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateGuestToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -225,7 +226,7 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -257,7 +258,7 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
     await editor1Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken('editor-001'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -276,7 +277,7 @@ test.describe('Chat Permissions - Editor Delete Message Permissions', () => {
     await editor2Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken('editor-002'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -318,7 +319,7 @@ test.describe('Chat Permissions - Editor Mute Permissions', () => {
     await userContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -337,7 +338,7 @@ test.describe('Chat Permissions - Editor Mute Permissions', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -374,7 +375,7 @@ test.describe('Chat Permissions - Editor Mute Permissions', () => {
     await adminContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -393,7 +394,7 @@ test.describe('Chat Permissions - Editor Mute Permissions', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -432,7 +433,7 @@ test.describe('Chat Permissions - Editor Mute Permissions', () => {
     await editor1Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateToken(2, 'editor-1', 'Editor One'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -451,7 +452,7 @@ test.describe('Chat Permissions - Editor Mute Permissions', () => {
     await editor2Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateToken(2, 'editor-2', 'Editor Two'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -487,7 +488,7 @@ test.describe('Chat Permissions - Editor Mute Permissions', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -531,7 +532,7 @@ test.describe('Chat Permissions - Admin Permissions', () => {
     await admin1Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateToken(0, 'admin-1', 'Admin One'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -550,7 +551,7 @@ test.describe('Chat Permissions - Admin Permissions', () => {
     await admin2Context.addCookies([{
       name: 'token',
       value: jwtHelper.generateToken(0, 'admin-2', 'Admin Two'),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -593,7 +594,7 @@ test.describe('Chat Permissions - Admin Permissions', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -612,7 +613,7 @@ test.describe('Chat Permissions - Admin Permissions', () => {
     await adminContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -649,7 +650,7 @@ test.describe('Chat Permissions - Admin Permissions', () => {
     await userContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -668,7 +669,7 @@ test.describe('Chat Permissions - Admin Permissions', () => {
     await adminContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -698,7 +699,7 @@ test.describe('Chat Permissions - Admin Permissions', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -731,7 +732,7 @@ test.describe('Chat Permissions - Admin Permissions', () => {
     await context.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -773,7 +774,7 @@ test.describe('Chat Permissions - Context Menu Logic', () => {
     await adminContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -792,7 +793,7 @@ test.describe('Chat Permissions - Context Menu Logic', () => {
     await userContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateUserToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -850,7 +851,7 @@ test.describe('Chat Permissions - Context Menu Logic', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -869,7 +870,7 @@ test.describe('Chat Permissions - Context Menu Logic', () => {
     await guestContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateGuestToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -926,7 +927,7 @@ test.describe('Chat Permissions - Context Menu Logic', () => {
     await adminContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateAdminToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 
@@ -945,7 +946,7 @@ test.describe('Chat Permissions - Context Menu Logic', () => {
     await editorContext.addCookies([{
       name: 'token',
       value: jwtHelper.generateEditorToken(),
-      domain: 'localhost',
+      domain: COOKIE_DOMAIN,
       path: '/',
     }]);
 

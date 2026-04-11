@@ -1,7 +1,8 @@
 import { test as setup } from '@playwright/test';
 import { JWTHelper } from '../helpers/jwt-helper';
+import { API_BASE } from '../helpers/test-config';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = API_BASE;
 
 setup('switch livestream to public', async ({}) => {
   console.log('\n📺 Switching livestream to PUBLIC...\n');
