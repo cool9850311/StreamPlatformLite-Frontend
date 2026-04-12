@@ -611,31 +611,20 @@ onMounted(async () => {
     }
   }
 
-  // Generate or retrieve anonymous ID from localStorage
-  const getOrCreateAnonymousId = () => {
-    if (typeof window === 'undefined') return null;
-
-    let viewerId = localStorage.getItem('viewer_id');
-    if (!viewerId) {
-      // Generate UUID v4
-      viewerId = crypto.randomUUID();
-      localStorage.setItem('viewer_id', viewerId);
+  // 第三步：如果已登录且有直播，启动聊天和观众计数
+  const pingViewerCount = async () => {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/livestream/ping-viewer-count/${streamData.value.uuid}`,
+        { withCredentials: true }
+      );
+      viewCount.value = response.data.viewer_count;
+    } catch (error) {
+      console.error('Error pinging viewer count:', error);
     }
-    return viewerId;
   };
 
-  // 第三步：如果已登录且有直播，启动聊天和观众计数
   if (isLoggedIn.value && streamData.value && streamData.value.uuid) {
-    const pingViewerCount = async () => {
-      try {
-        const response = await axios.get(`${backendUrl}/livestream/ping-viewer-count/${streamData.value.uuid}`, {
-          withCredentials: true
-        });
-        viewCount.value = response.data.viewer_count;
-      } catch (error) {
-        console.error('Error pinging viewer count:', error);
-      }
-    };
 
     const fetchMessages = async () => {
       try {
@@ -663,24 +652,6 @@ onMounted(async () => {
     setInterval(pingViewerCount, 5000);
     pingViewerCount();
   } else if (streamData.value && streamData.value.uuid) {
-    // 匿名用户 ping viewer count with anonymous_id
-    const pingViewerCount = async () => {
-      try {
-        let url = `${backendUrl}/livestream/ping-viewer-count/${streamData.value.uuid}`;
-
-        // Add anonymous_id for anonymous users
-        const anonymousId = getOrCreateAnonymousId();
-        if (anonymousId) {
-          url += `?anonymous_id=${anonymousId}`;
-        }
-
-        const response = await axios.get(url, { withCredentials: true });
-        viewCount.value = response.data.viewer_count;
-      } catch (error) {
-        console.error('Error pinging viewer count:', error);
-      }
-    };
-
     // 启动匿名用户的观众计数轮询
     setInterval(pingViewerCount, 5000);
     pingViewerCount();

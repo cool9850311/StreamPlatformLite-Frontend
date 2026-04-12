@@ -25,8 +25,8 @@ test('debug anonymous ID generation', async ({ page }) => {
   // Wait for async code to execute
   await page.waitForTimeout(8000);
 
-  const anonymousId = await page.evaluate(() => {
-    return localStorage.getItem('viewer_id');
-  });
-  console.log(`Anonymous ID in localStorage: ${anonymousId}`);
+  const anonymousId = await page.context().cookies().then(
+    cookies => cookies.find(c => c.name === 'anonymous_id')?.value ?? null
+  );
+  console.log(`Anonymous ID cookie: ${anonymousId}`);
 });

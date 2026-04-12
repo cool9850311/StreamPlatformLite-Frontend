@@ -194,232 +194,130 @@ test.describe('Anonymous User - Public Stream Access', () => {
   });
 });
 
-/**
- * Anonymous Viewer Count Tests
- *
- * 测试目标：
- * - Anonymous 用户生成和使用 viewer_id 进行观众计数
- * - localStorage 持久化和跨分页共享
- * - API 调用正确发送 anonymous_id 参数
- */
-test.describe('Anonymous User - Viewer Count with anonymous_id', () => {
+test.describe('Anonymous User - Viewer Count with JWT Cookie', () => {
   let streamPage: StreamPage;
 
   test.beforeEach(async ({ page }) => {
     streamPage = new StreamPage(page);
   });
 
-  test('should generate and store anonymous ID in localStorage on first visit', async ({ page }) => {
-    // Clear any existing state first
-    await page.goto('/stream');
-    await page.evaluate(() => localStorage.clear());
-
-    // Navigate to stream page (fresh state)
+  test('backend should set anonymous_id JWT cookie on first ping', async ({ page }) => {
+    await page.context().clearCookies();
     await streamPage.navigate();
-    await streamPage.waitForStreamData();
+    await streamPage.waitForViewerPing();
 
-    // Wait for the ping-viewer-count API call which triggers ID generation
-    await page.waitForResponse(
-      response => response.url().includes('/ping-viewer-count/'),
-      { timeout: 10000 }
-    );
-
-    // Check localStorage has viewer_id
-    const anonymousId = await streamPage.getAnonymousIdFromLocalStorage();
-    expect(anonymousId).not.toBeNull();
-    expect(anonymousId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i); // UUID v4 format
-
-    await page.screenshot({ path: 'test-results/anonymous-id-generated.png' });
+    const cookie = await streamPage.getAnonymousIdCookie();
+    expect(cookie).toBeTruthy();
+    expect(cookie!.split('.')).toHaveLength(3);
   });
 
-  test('should persist anonymous ID across page reloads', async ({ page }) => {
-    // Clear and start fresh
-    await page.goto('/stream');
-    await page.evaluate(() => localStorage.clear());
-
-    // First visit
+  test('anonymous_id cookie should contain viewer_id in payload', async ({ page }) => {
+    await page.context().clearCookies();
     await streamPage.navigate();
-    await streamPage.waitForStreamData();
-    await page.waitForTimeout(1000);
+    await streamPage.waitForViewerPing();
 
-    const firstVisitId = await streamPage.getAnonymousIdFromLocalStorage();
-    expect(firstVisitId).not.toBeNull();
+    const jwt = await streamPage.getAnonymousIdCookie();
+    expect(jwt).toBeTruthy();
+    const payload = JSON.parse(Buffer.from(jwt!.split('.')[1], 'base64url').toString());
+    expect(payload.viewer_id).toBeTruthy();
+    expect(payload.exp).toBeGreaterThan(Date.now() / 1000);
+  });
 
-    // Reload page
+  test('anonymous_id cookie should be HttpOnly (not accessible via JS)', async ({ page }) => {
+    await page.context().clearCookies();
+    await streamPage.navigate();
+    await streamPage.waitForViewerPing();
+
+    const cookies = await page.context().cookies();
+    const anonCookie = cookies.find(c => c.name === 'anonymous_id');
+    expect(anonCookie).toBeTruthy();
+    expect(anonCookie!.httpOnly).toBe(true);
+
+    const jsValue = await page.evaluate(() => document.cookie);
+    expect(jsValue).not.toContain('anonymous_id');
+  });
+
+  test('should persist same viewer_id across page reloads', async ({ page }) => {
+    await page.context().clearCookies();
+    await streamPage.navigate();
+    await streamPage.waitForViewerPing();
+    const id1 = await streamPage.getViewerIDFromCookie();
+
     await page.reload();
-    await streamPage.waitForStreamData();
-    await page.waitForTimeout(1000);
+    await streamPage.waitForViewerPing();
+    const id2 = await streamPage.getViewerIDFromCookie();
 
-    // Check ID is same
-    const secondVisitId = await streamPage.getAnonymousIdFromLocalStorage();
-    expect(secondVisitId).toBe(firstVisitId);
-
-    // Reload again
     await page.reload();
-    await streamPage.waitForStreamData();
-    await page.waitForTimeout(1000);
+    await streamPage.waitForViewerPing();
+    const id3 = await streamPage.getViewerIDFromCookie();
 
-    const thirdVisitId = await streamPage.getAnonymousIdFromLocalStorage();
-    expect(thirdVisitId).toBe(firstVisitId);
+    expect(id1).toBeTruthy();
+    expect(id1).toBe(id2);
+    expect(id1).toBe(id3);
   });
 
-  test('should share same anonymous ID across multiple tabs', async ({ page, context }) => {
-    // Clear and start fresh
-    await page.goto('/stream');
-    await page.evaluate(() => localStorage.clear());
-
-    // First tab
+  test('ping request should NOT include anonymous_id query parameter', async ({ page }) => {
+    const pingUrls: string[] = [];
+    page.on('request', req => {
+      if (req.url().includes('/ping-viewer-count/')) pingUrls.push(req.url());
+    });
     await streamPage.navigate();
-    await streamPage.waitForStreamData();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(6000);
 
-    const tab1Id = await streamPage.getAnonymousIdFromLocalStorage();
-    expect(tab1Id).not.toBeNull();
-
-    // Open second tab in same browser context
-    const page2 = await context.newPage();
-    const streamPage2 = new StreamPage(page2);
-    await streamPage2.navigate();
-    await streamPage2.waitForStreamData();
-
-    const tab2Id = await streamPage2.getAnonymousIdFromLocalStorage();
-    expect(tab2Id).toBe(tab1Id); // Same ID
-
-    // Open third tab
-    const page3 = await context.newPage();
-    const streamPage3 = new StreamPage(page3);
-    await streamPage3.navigate();
-    await streamPage3.waitForStreamData();
-
-    const tab3Id = await streamPage3.getAnonymousIdFromLocalStorage();
-    expect(tab3Id).toBe(tab1Id); // Same ID
-
-    await page2.close();
-    await page3.close();
+    expect(pingUrls.length).toBeGreaterThan(0);
+    pingUrls.forEach(url => expect(url).not.toContain('anonymous_id='));
   });
 
-  test('should send anonymous_id in query parameter when pinging viewer count', async ({ page }) => {
-    // Clear and set a known anonymous ID
-    await page.goto('/stream');
-    await page.evaluate(() => localStorage.clear());
+  test('different browser contexts from same IP should get same viewer_id', async ({ browser }) => {
+    const ctx1 = await browser.newContext();
+    const ctx2 = await browser.newContext();
+    const page1 = await ctx1.newPage();
+    const page2 = await ctx2.newPage();
+    const stream1 = new StreamPage(page1);
+    const stream2 = new StreamPage(page2);
 
-    const testAnonymousId = '550e8400-e29b-41d4-a716-446655440000';
-    await page.evaluate((id) => {
-      localStorage.setItem('viewer_id', id);
-    }, testAnonymousId);
+    await stream1.navigate();
+    await stream1.waitForViewerPing();
+    const id1 = await stream1.getViewerIDFromCookie();
 
-    // Navigate to stream
-    await streamPage.navigate();
-    await streamPage.waitForStreamData();
+    await stream2.navigate();
+    await stream2.waitForViewerPing();
+    const id2 = await stream2.getViewerIDFromCookie();
 
-    // Wait for ping API call and extract anonymous_id
-    const sentAnonymousId = await streamPage.waitForViewerPingWithAnonymousId();
+    expect(id1).toBeTruthy();
+    expect(id2).toBeTruthy();
+    expect(id1).toBe(id2);
 
-    expect(sentAnonymousId).toBe(testAnonymousId);
-
-    await page.screenshot({ path: 'test-results/anonymous-id-query-param.png' });
+    await ctx1.close();
+    await ctx2.close();
   });
 
   test('should increment viewer count when anonymous user joins', async ({ page }) => {
-    // Clear and start fresh
-    await page.goto('/stream');
-    await page.evaluate(() => localStorage.clear());
-
-    // Navigate and wait for initial ping
+    await page.context().clearCookies();
     await streamPage.navigate();
     await streamPage.waitForStreamData();
-    await page.waitForTimeout(6000); // Wait for first ping // Wait for first ping
+    await page.waitForTimeout(6000);
 
-    // Get current viewer count
     const viewerCount = await streamPage.getViewerCount();
-    expect(viewerCount).toBeGreaterThanOrEqual(1); // At least this anonymous user
+    expect(viewerCount).toBeGreaterThanOrEqual(1);
 
     await page.screenshot({ path: 'test-results/anonymous-viewer-count.png' });
   });
 
   test('should update viewer count periodically via polling', async ({ page }) => {
-    // Clear and start fresh
-    await page.goto('/stream');
-    await page.evaluate(() => localStorage.clear());
-
+    await page.context().clearCookies();
     await streamPage.navigate();
     await streamPage.waitForStreamData();
 
-    // Record viewer counts over time
     const counts: number[] = [];
-
     for (let i = 0; i < 3; i++) {
-      await page.waitForTimeout(6000); // Wait for ping interval
+      await page.waitForTimeout(6000);
       const count = await streamPage.getViewerCount();
       counts.push(count);
     }
 
-    // Verify we got 3 counts
     expect(counts.length).toBe(3);
-
-    // Counts should all be >= 1 (this test's anonymous user)
-    counts.forEach(count => {
-      expect(count).toBeGreaterThanOrEqual(1);
-    });
-
+    counts.forEach(count => expect(count).toBeGreaterThanOrEqual(1));
     console.log('Viewer counts over time:', counts);
-  });
-
-  test('should generate different anonymous IDs in different browser contexts', async ({ page, browser }) => {
-    // Clear and start fresh
-    await page.goto('/stream');
-    await page.evaluate(() => localStorage.clear());
-
-    // First browser context
-    await streamPage.navigate();
-    await streamPage.waitForStreamData();
-    await page.waitForTimeout(1000);
-
-    const context1Id = await streamPage.getAnonymousIdFromLocalStorage();
-    expect(context1Id).not.toBeNull();
-
-    // Create new incognito context (separate localStorage)
-    const context2 = await browser.newContext();
-    const page2 = await context2.newPage();
-    const streamPage2 = new StreamPage(page2);
-
-    await streamPage2.navigate();
-    await streamPage2.waitForStreamData();
-    await page2.waitForTimeout(1000);
-
-    const context2Id = await streamPage2.getAnonymousIdFromLocalStorage();
-    expect(context2Id).not.toBeNull();
-    expect(context2Id).not.toBe(context1Id); // Different IDs
-
-    await context2.close();
-  });
-
-  test('should not send anonymous_id for logged-in users', async ({ page }) => {
-    // This test verifies anonymous users DO send anonymous_id
-    // (Testing logged-in users would require OAuth setup)
-
-    // Clear and start fresh
-    await page.goto('/stream');
-    await page.evaluate(() => localStorage.clear());
-
-    await streamPage.navigate();
-    await streamPage.waitForStreamData();
-
-    // Wait for ping API call with anonymous_id
-    try {
-      const sentAnonymousId = await streamPage.waitForViewerPingWithAnonymousId();
-
-      // For anonymous users, anonymous_id should be present
-      expect(sentAnonymousId).not.toBeNull();
-      expect(sentAnonymousId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
-    } catch (error) {
-      // If no ping with anonymous_id is found within timeout, fail the test
-      throw new Error('Expected anonymous_id in ping request but none found');
-    }
-
-    // Note: To fully test logged-in behavior, we would need to:
-    // 1. Perform actual Discord OAuth login
-    // 2. Navigate to stream page
-    // 3. Verify anonymous_id is NOT sent in the API call
   });
 });
