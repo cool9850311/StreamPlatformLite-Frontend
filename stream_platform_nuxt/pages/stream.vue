@@ -253,23 +253,27 @@ const sendMessage = async () => {
     const backendUrl = runtimeConfig.public.BACKEND_URL;
     const streamUUID = streamData.value.uuid;
 
-    await axios.post(`${backendUrl}/livestream/chat`, {
-      stream_uuid: streamUUID,
-      message: newMessage.value
-    }, {
-      withCredentials: true
+    const { apiFetch } = useApi();
+    const chatResponse = await apiFetch('/livestream/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        stream_uuid: streamUUID,
+        message: newMessage.value
+      })
     });
 
-    newMessage.value = '';
-  } catch (error) {
-    if (error.response && error.response.status === 429) {
+    if (chatResponse.status === 429) {
       notification.value.showNotification($t('errors.rate_limit'), 'error');
       return;
     }
-    if (error.response && error.response.status === 403) {
+    if (chatResponse.status === 403) {
       console.error('You are not allowed to send messages in this chat.');
       notification.value.showNotification($t('stream.chat.not_allowed'), 'error');
+      return;
     }
+
+    newMessage.value = '';
+  } catch (error) {
     console.error('Error sending message:', error);
   }
 };
@@ -309,25 +313,21 @@ const showOptions = async (message, event) => {
 
 const deleteMessage = async (message) => {
   try {
-    const runtimeConfig = useRuntimeConfig();
-    const backendUrl = runtimeConfig.public.BACKEND_URL;
-
-    const response = await axios.delete(`${backendUrl}/livestream/chat/${streamData.value.uuid}/${message.id}`, {
-      withCredentials: true
+    const { apiFetch } = useApi();
+    const response = await apiFetch(`/livestream/chat/${streamData.value.uuid}/${message.id}`, {
+      method: 'DELETE'
     });
 
     if (response.status === 200) {
       messages.value = messages.value.filter(m => m.id !== message.id);
       showContextMenu.value = false;
       notification.value.showNotification($t('stream.chat.message_deleted'), 'success');
+    } else if (response.status === 429) {
+      notification.value.showNotification($t('errors.rate_limit'), 'error');
     } else {
       notification.value.showNotification($t('stream.chat.delete_failed'), 'error');
     }
   } catch (error) {
-    if (error.response && error.response.status === 429) {
-      notification.value.showNotification($t('errors.rate_limit'), 'error');
-      return;
-    }
     console.error('Error deleting message:', error);
     notification.value.showNotification($t('stream.chat.delete_failed'), 'error');
   }
@@ -351,14 +351,13 @@ const muteUser = async (message) => {
   // If user confirms mute
   if (result.isConfirmed) {
     try {
-      const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
-
-      const response = await axios.post(`${backendUrl}/livestream/mute-user`, {
-        stream_uuid: streamData.value.uuid,
-        chat_id: message.id
-      }, {
-        withCredentials: true
+      const { apiFetch } = useApi();
+      const response = await apiFetch('/livestream/mute-user', {
+        method: 'POST',
+        body: JSON.stringify({
+          stream_uuid: streamData.value.uuid,
+          chat_id: message.id
+        })
       });
 
       if (response.status === 200) {
@@ -545,6 +544,8 @@ onMounted(async () => {
     });
 
     // 成功获取用户信息
+    const { setCsrfToken } = useCsrfToken();
+    setCsrfToken(meResponse.data.csrf_token ?? '');
     currentUserId.value = meResponse.data.user_id;
     currentUserRole.value = meResponse.data.role;
 

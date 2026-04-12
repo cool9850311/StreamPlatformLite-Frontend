@@ -149,16 +149,10 @@ export default {
   methods: {
 
     async createAccount() {
-      const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
-
       try {
-        const response = await fetch(`${backendUrl}/origin-account/create`, {
+        const { apiFetch } = useApi();
+        const response = await apiFetch('/origin-account/create', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
           body: JSON.stringify(this.newAccount)
         });
         if (response.ok) {
@@ -208,16 +202,10 @@ export default {
 
       // If user confirms deletion
       if (result.isConfirmed) {
-        const runtimeConfig = useRuntimeConfig();
-        const backendUrl = runtimeConfig.public.BACKEND_URL;
-
         try {
-          const response = await fetch(`${backendUrl}/origin-account/delete`, {
+          const { apiFetch } = useApi();
+          const response = await apiFetch('/origin-account/delete', {
             method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            credentials: 'include',
             body: JSON.stringify({ username: this.selectedAccount })
           });
           if (response.ok) {

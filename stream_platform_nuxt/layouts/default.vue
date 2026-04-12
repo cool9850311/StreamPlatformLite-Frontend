@@ -108,6 +108,10 @@ export default {
       this.isNative = meResponse.data.identity_provider === 'Origin';
       // Role 是數字: Admin=0, Streamer=1, Editor=2, User=3, Guest=4, Anonymous=5
       this.isAdmin = meResponse.data.role === 0;
+
+      // Populate CSRF token state for all pages
+      const { setCsrfToken } = useCsrfToken();
+      setCsrfToken(meResponse.data.csrf_token ?? '');
     } catch (error) {
       // 未登录，显示登录按钮
       this.isLoggedIn = false;

@@ -403,16 +403,24 @@ test.describe('Rate Limiting - UserID-based endpoints', () => {
     await userPage.goto('/settings');
     await userPage.waitForLoadState('domcontentloaded');
 
+    // Get CSRF token from /me before making state-changing requests
+    const csrfToken = await userPage.evaluate(async (apiBase) => {
+      const meRes = await fetch(`${apiBase}/me`, { credentials: 'include' });
+      const meData = await meRes.json();
+      return meData.csrf_token ?? '';
+    }, API_BASE);
+
     const responses: any[] = [];
 
     // Make 11 password change requests
     for (let i = 0; i < 11; i++) {
-      const response = await userPage.evaluate(async (apiBase) => {
+      const response = await userPage.evaluate(async ({ apiBase, csrfToken }) => {
         const res = await fetch(`${apiBase}/origin-account/change-password`, {
           method: 'PATCH',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': csrfToken,
           },
           body: JSON.stringify({
             old_password: 'oldpass123',
@@ -423,7 +431,7 @@ test.describe('Rate Limiting - UserID-based endpoints', () => {
           status: res.status,
           headers: Object.fromEntries(res.headers.entries()),
         };
-      }, API_BASE);
+      }, { apiBase: API_BASE, csrfToken });
 
       responses.push(response);
       await userPage.waitForTimeout(100);

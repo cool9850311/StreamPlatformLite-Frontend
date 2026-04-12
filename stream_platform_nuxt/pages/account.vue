@@ -114,16 +114,10 @@ export default {
         return;
       }
 
-      const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
-
       try {
-        const response = await fetch(`${backendUrl}/origin-account/change-password`, {
+        const { apiFetch } = useApi();
+        const response = await apiFetch('/origin-account/change-password', {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
           body: JSON.stringify(this.changePasswordRequest)
         });
         if (response.status === 429) {
