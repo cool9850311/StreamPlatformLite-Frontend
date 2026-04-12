@@ -136,31 +136,24 @@ export class StreamPage {
     return match ? parseInt(match[0], 10) : 0;
   }
 
-  /**
-   * Get anonymous ID from localStorage
-   */
-  async getAnonymousIdFromLocalStorage(): Promise<string | null> {
-    return await this.page.evaluate(() => {
-      return localStorage.getItem('viewer_id');
-    });
+  async waitForViewerPing(): Promise<void> {
+    await this.page.waitForResponse(
+      r => r.url().includes('/ping-viewer-count/') && r.status() === 200,
+      { timeout: 10000 }
+    );
   }
 
-  /**
-   * Set anonymous ID in localStorage
-   */
-  async setAnonymousIdInLocalStorage(id: string): Promise<void> {
-    await this.page.evaluate((viewerId) => {
-      localStorage.setItem('viewer_id', viewerId);
-    }, id);
+  async getAnonymousIdCookie(): Promise<string | null> {
+    const cookies = await this.page.context().cookies();
+    return cookies.find(c => c.name === 'anonymous_id')?.value ?? null;
   }
 
-  /**
-   * Clear anonymous ID from localStorage
-   */
-  async clearAnonymousIdFromLocalStorage(): Promise<void> {
-    await this.page.evaluate(() => {
-      localStorage.removeItem('viewer_id');
-    });
+  async getViewerIDFromCookie(): Promise<string | null> {
+    const jwt = await this.getAnonymousIdCookie();
+    if (!jwt) return null;
+    const payload = jwt.split('.')[1];
+    const decoded = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    return decoded.viewer_id ?? null;
   }
 
   /**
@@ -178,17 +171,4 @@ export class StreamPage {
     throw new Error(`Viewer count did not reach ${expectedCount} within ${timeout}ms`);
   }
 
-  /**
-   * Wait for ping-viewer-count API call with anonymous_id query parameter
-   */
-  async waitForViewerPingWithAnonymousId(): Promise<string | null> {
-    const response = await this.page.waitForResponse(
-      response => response.url().includes('/ping-viewer-count/') && response.url().includes('anonymous_id='),
-      { timeout: 10000 }
-    );
-
-    // Extract anonymous_id from URL
-    const url = new URL(response.url());
-    return url.searchParams.get('anonymous_id');
-  }
 }
