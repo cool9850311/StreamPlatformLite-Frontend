@@ -44,7 +44,8 @@ export default defineConfig({
         '**/e2e/user-public-stream.spec.ts',
         '**/e2e/editor-public-stream.spec.ts',
         '**/e2e/admin-public-stream.spec.ts',
-        '**/e2e/stream-chat-permissions.spec.ts'
+        '**/e2e/stream-chat-permissions.spec.ts',
+        '**/security/csrf-frontend.spec.ts'
       ],
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['setup-public'],
@@ -78,7 +79,10 @@ export default defineConfig({
     },
     {
       name: 'security-headers-tests',
-      testMatch: '**/security/security-headers.spec.ts',
+      testMatch: [
+        '**/security/security-headers.spec.ts',
+        '**/security/csrf-protection.spec.ts'
+      ],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: TEST_MODE === 'production-https' ? 'https://localtest.me' : 'http://localhost:3000',

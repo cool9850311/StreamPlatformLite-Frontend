@@ -111,18 +111,12 @@ export default {
       }
     },
     async saveSettings() {
-      const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
-
       this.settings.streamAccessRoleIds = this.streamAccessRoleIdsString.split('\n').map(id => id.trim()).filter(id => id);
 
       try {
-        const response = await fetch(`${backendUrl}/system-settings`, {
+        const { apiFetch } = useApi();
+        const response = await apiFetch('/system-settings', {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
           body: JSON.stringify({
             editor_role_id: this.settings.editorRoleId,
             stream_access_role_ids: this.settings.streamAccessRoleIds

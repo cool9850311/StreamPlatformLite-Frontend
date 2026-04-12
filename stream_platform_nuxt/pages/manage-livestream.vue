@@ -264,9 +264,6 @@ export default {
       }
     },
     async createLivestream() {
-      const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
-
       const livestreamData = {
         name: this.livestream.name,
         visibility: this.livestream.visibility,
@@ -276,12 +273,9 @@ export default {
       };
 
       try {
-        const response = await fetch(`${backendUrl}/livestream`, {
+        const { apiFetch } = useApi();
+        const response = await apiFetch('/livestream', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
           body: JSON.stringify(livestreamData)
         });
         if (!response.ok) {
@@ -313,13 +307,10 @@ export default {
 
       // If user confirms deletion
       if (result.isConfirmed) {
-        const runtimeConfig = useRuntimeConfig();
-        const backendUrl = runtimeConfig.public.BACKEND_URL;
-
         try {
-          const response = await fetch(`${backendUrl}/livestream/${this.livestream.uuid}`, {
-            method: 'DELETE',
-            credentials: 'include'
+          const { apiFetch } = useApi();
+          const response = await apiFetch(`/livestream/${this.livestream.uuid}`, {
+            method: 'DELETE'
           });
           if (!response.ok) {
             const errorData = await response.json();

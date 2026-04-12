@@ -30,10 +30,19 @@ export default async function globalSetup() {
       const livestream = await checkResponse.json();
       console.log(`🗑️  Deleting existing livestream: ${livestream.uuid}`);
 
+      // Get CSRF token from /me endpoint
+      const meResponse = await fetch(`${API_BASE_URL}/me`, {
+        method: 'GET',
+        headers: { 'Cookie': `token=${adminToken}` },
+      });
+      const meData = await meResponse.json();
+      const csrfToken = meData.csrf_token ?? '';
+
       const deleteResponse = await fetch(`${API_BASE_URL}/livestream/${livestream.uuid}`, {
         method: 'DELETE',
         headers: {
           'Cookie': `token=${adminToken}`,
+          'X-XSRF-TOKEN': csrfToken,
         },
       });
 

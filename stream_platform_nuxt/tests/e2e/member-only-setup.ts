@@ -20,11 +20,20 @@ setup('switch livestream to member_only', async ({}) => {
     if (!response.ok) {
       // No livestream exists, create one
       console.log('📺 Creating new MEMBER_ONLY livestream...');
+      // Get CSRF token from /me
+      const meCreateRes = await fetch(`${API_BASE_URL}/me`, {
+        method: 'GET',
+        headers: { 'Cookie': `token=${adminToken}` },
+      });
+      const meCreateData = await meCreateRes.json();
+      const createCsrfToken = meCreateData.csrf_token ?? '';
+
       const createResponse = await fetch(`${API_BASE_URL}/livestream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Cookie': `token=${adminToken}`,
+          'X-XSRF-TOKEN': createCsrfToken,
         },
         body: JSON.stringify({
           title: 'E2E Test Stream',
@@ -52,11 +61,20 @@ setup('switch livestream to member_only', async ({}) => {
     // Update to member_only
     if (livestream.visibility !== 'member_only') {
       console.log('🔧 Updating visibility to MEMBER_ONLY...');
+      // Get CSRF token from /me
+      const meResponse = await fetch(`${API_BASE_URL}/me`, {
+        method: 'GET',
+        headers: { 'Cookie': `token=${adminToken}` },
+      });
+      const meData = await meResponse.json();
+      const csrfToken = meData.csrf_token ?? '';
+
       const updateResponse = await fetch(`${API_BASE_URL}/livestream/${livestream.uuid}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Cookie': `token=${adminToken}`,
+          'X-XSRF-TOKEN': csrfToken,
         },
         body: JSON.stringify({
           uuid: livestream.uuid,
