@@ -1,26 +1,20 @@
-# Use the official Node.js image as the base image
 FROM node:20-alpine
 
-# Build-time argument for CSP configuration
-# Default: strict CSP enabled (production)
-# Set to 'false' for development
 ARG ENABLE_STRICT_CSP=true
 
-# Set the working directory
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY . .
 WORKDIR /app/stream_platform_nuxt
 
-# Install dependencies
 RUN npm install
-
-# Build the application with CSP configuration
 RUN ENABLE_STRICT_CSP=$ENABLE_STRICT_CSP npm run build
 
-# Expose the port the app runs on
+# node:20-alpine ships with a pre-existing 'node' user at UID 1000
+USER node
+
 EXPOSE 3000
 
-# Start the application
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget -qO- http://localhost:3000 || exit 1
+
 CMD ["node", ".output/server/index.mjs"]

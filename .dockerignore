@@ -1,0 +1,5 @@
+.git
+.gitignore
+**/*.md
+stream_platform_nuxt/tests/
+playwright.config.ts
