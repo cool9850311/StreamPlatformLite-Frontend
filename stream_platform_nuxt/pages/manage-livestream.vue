@@ -196,10 +196,10 @@ export default {
   async mounted() {
     try {
       const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const authUrl = runtimeConfig.public.AUTH_URL;
 
       // Check admin status by calling system-settings endpoint
-      const adminCheckResponse = await fetch(`${backendUrl}/system-settings`, {
+      const adminCheckResponse = await fetch(`${authUrl}/system-settings`, {
         credentials: 'include'
       });
 

@@ -83,10 +83,10 @@ export default {
   async mounted() {
     try {
       const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const authUrl = runtimeConfig.public.AUTH_URL;
 
       // Check if user is logged in with Origin (native) account
-      const response = await fetch(`${backendUrl}/me`, {
+      const response = await fetch(`${authUrl}/me`, {
         credentials: 'include'
       });
 
@@ -115,8 +115,8 @@ export default {
       }
 
       try {
-        const { apiFetch } = useApi();
-        const response = await apiFetch('/origin-account/change-password', {
+        const { authApiFetch } = useAuthApi();
+        const response = await authApiFetch('/origin-account/change-password', {
           method: 'PATCH',
           body: JSON.stringify(this.changePasswordRequest)
         });

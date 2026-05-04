@@ -6,5 +6,9 @@ export const API_BASE = TEST_MODE === 'production-https'
   ? 'https://localtest.me/api'
   : 'http://localhost:8080';
 
+export const AUTH_BASE = TEST_MODE === 'production-https'
+  ? 'https://localtest.me/auth'
+  : 'http://localhost:8081';
+
 // In HTTPS mode, caddy stack Redis is exposed on 6380 (6379 is the dev stack)
 export const REDIS_PORT = TEST_MODE === 'production-https' ? 6380 : 6379;

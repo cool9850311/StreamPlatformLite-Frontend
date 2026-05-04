@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { API_BASE as _API_BASE, AUTH_BASE, COOKIE_DOMAIN } from '../helpers/test-config';
 
 const TEST_MODE = process.env.TEST_MODE || 'development';
 const isHTTPS = TEST_MODE === 'production-https';
@@ -9,31 +10,31 @@ const FRONTEND_BASE = isHTTPS ? 'https://localtest.me' : 'http://localhost:3000'
 
 test.describe('Security Headers - Backend', () => {
   test('Backend should include X-Content-Type-Options', async ({ request }) => {
-    const response = await request.get(`${API_BASE}/me`);
+    const response = await request.get(`${AUTH_BASE}/me`);
     const headers = response.headers();
     expect(headers['x-content-type-options']).toBe('nosniff');
   });
 
   test('Backend should include X-Frame-Options', async ({ request }) => {
-    const response = await request.get(`${API_BASE}/me`);
+    const response = await request.get(`${AUTH_BASE}/me`);
     const headers = response.headers();
     expect(headers['x-frame-options']).toBe('DENY');
   });
 
   test('Backend should include X-XSS-Protection', async ({ request }) => {
-    const response = await request.get(`${API_BASE}/me`);
+    const response = await request.get(`${AUTH_BASE}/me`);
     const headers = response.headers();
     expect(headers['x-xss-protection']).toBe('1; mode=block');
   });
 
   test('Backend should include Referrer-Policy', async ({ request }) => {
-    const response = await request.get(`${API_BASE}/me`);
+    const response = await request.get(`${AUTH_BASE}/me`);
     const headers = response.headers();
     expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
   });
 
   test('Backend should include Permissions-Policy', async ({ request }) => {
-    const response = await request.get(`${API_BASE}/me`);
+    const response = await request.get(`${AUTH_BASE}/me`);
     const headers = response.headers();
     expect(headers['permissions-policy']).toBeDefined();
     const policy = headers['permissions-policy'];
@@ -43,7 +44,7 @@ test.describe('Security Headers - Backend', () => {
   });
 
   test('Backend API should include strict CSP', async ({ request }) => {
-    const response = await request.get(`${API_BASE}/me`);
+    const response = await request.get(`${AUTH_BASE}/me`);
     const headers = response.headers();
     const csp = headers['content-security-policy'];
     expect(csp).toBeDefined();
@@ -53,14 +54,14 @@ test.describe('Security Headers - Backend', () => {
 
   test('Backend should NOT include HSTS in development mode', async ({ request }) => {
     test.skip(isHTTPS, 'HSTS is expected in HTTPS mode');
-    const response = await request.get(`${API_BASE}/me`);
+    const response = await request.get(`${AUTH_BASE}/me`);
     const headers = response.headers();
     expect(headers['strict-transport-security']).toBeUndefined();
   });
 
   test('Backend should include HSTS in HTTPS mode', async ({ request }) => {
     test.skip(!isHTTPS, 'HSTS only expected in HTTPS mode');
-    const response = await request.get(`${API_BASE}/me`);
+    const response = await request.get(`${AUTH_BASE}/me`);
     const headers = response.headers();
     expect(headers['strict-transport-security']).toBeDefined();
     expect(headers['strict-transport-security']).toContain('max-age=31536000');

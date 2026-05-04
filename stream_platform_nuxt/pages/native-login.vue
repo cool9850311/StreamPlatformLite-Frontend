@@ -71,12 +71,12 @@ const { t } = useI18n();
 const username = ref('');
 const password = ref('');
 const runtimeConfig = useRuntimeConfig();
-const backendUrl = runtimeConfig.public.BACKEND_URL;
+const authUrl = runtimeConfig.public.AUTH_URL;
 const notification = ref<any>(null);
 
 async function handleLogin() {
   try {
-    const response = await axios.post(`${backendUrl}/origin-account/login`, {
+    const response = await axios.post(`${authUrl}/origin-account/login`, {
       username: username.value,
       password: password.value
     }, {

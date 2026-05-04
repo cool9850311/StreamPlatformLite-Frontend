@@ -48,9 +48,9 @@ import LanguageSwitcher from '~/components/LanguageSwitcher.vue';
 import { useI18n } from 'vue-i18n';
 
 const route = useRoute()
-const runtimeConfig = useRuntimeConfig()
-const backendUrl = runtimeConfig.public.BACKEND_URL
-const discordLoginUrl = `${backendUrl}/oauth/discord/init`
+const config = useRuntimeConfig()
+const authUrl = config.public.AUTH_URL
+const discordLoginUrl = `${authUrl}/oauth/discord/init`
 
 const { $swal } = useNuxtApp()
 const { t } = useI18n()
