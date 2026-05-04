@@ -73,9 +73,9 @@ export default {
   async mounted() {
     try {
       const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const authUrl = runtimeConfig.public.AUTH_URL;
 
-      const response = await fetch(`${backendUrl}/system-settings`, {
+      const response = await fetch(`${authUrl}/system-settings`, {
         credentials: 'include'
       });
 
@@ -92,10 +92,10 @@ export default {
   methods: {
     async fetchSettings() {
       const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const authUrl = runtimeConfig.public.AUTH_URL;
 
       try {
-        const response = await fetch(`${backendUrl}/system-settings`, {
+        const response = await fetch(`${authUrl}/system-settings`, {
           credentials: 'include'
         });
         if (response.ok) {
@@ -114,8 +114,8 @@ export default {
       this.settings.streamAccessRoleIds = this.streamAccessRoleIdsString.split('\n').map(id => id.trim()).filter(id => id);
 
       try {
-        const { apiFetch } = useApi();
-        const response = await apiFetch('/system-settings', {
+        const { authApiFetch } = useAuthApi();
+        const response = await authApiFetch('/system-settings', {
           method: 'PATCH',
           body: JSON.stringify({
             editor_role_id: this.settings.editorRoleId,

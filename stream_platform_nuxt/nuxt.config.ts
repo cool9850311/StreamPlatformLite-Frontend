@@ -18,7 +18,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      BACKEND_URL: process.env.BACKEND_URL || ''
+      BACKEND_URL: process.env.BACKEND_URL || '',
+      AUTH_URL: process.env.AUTH_URL || '',
     }
   },
   plugins: [

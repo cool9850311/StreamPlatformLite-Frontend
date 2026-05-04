@@ -1,8 +1,9 @@
 import { test as setup } from '@playwright/test';
 import { JWTHelper } from '../helpers/jwt-helper';
-import { API_BASE } from '../helpers/test-config';
+import { API_BASE, AUTH_BASE } from '../helpers/test-config';
 
 const API_BASE_URL = API_BASE;
+const AUTH_BASE_URL = AUTH_BASE;
 
 setup('switch livestream to member_only', async ({}) => {
   console.log('\n🔒 Switching livestream to MEMBER_ONLY...\n');
@@ -21,7 +22,7 @@ setup('switch livestream to member_only', async ({}) => {
       // No livestream exists, create one
       console.log('📺 Creating new MEMBER_ONLY livestream...');
       // Get CSRF token from /me
-      const meCreateRes = await fetch(`${API_BASE_URL}/me`, {
+      const meCreateRes = await fetch(`${AUTH_BASE_URL}/me`, {
         method: 'GET',
         headers: { 'Cookie': `token=${adminToken}` },
       });
@@ -62,7 +63,7 @@ setup('switch livestream to member_only', async ({}) => {
     if (livestream.visibility !== 'member_only') {
       console.log('🔧 Updating visibility to MEMBER_ONLY...');
       // Get CSRF token from /me
-      const meResponse = await fetch(`${API_BASE_URL}/me`, {
+      const meResponse = await fetch(`${AUTH_BASE_URL}/me`, {
         method: 'GET',
         headers: { 'Cookie': `token=${adminToken}` },
       });

@@ -127,10 +127,10 @@ export default {
   async mounted() {
     try {
       const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const authUrl = runtimeConfig.public.AUTH_URL;
 
       // Check admin status by calling system-settings endpoint
-      const response = await fetch(`${backendUrl}/system-settings`, {
+      const response = await fetch(`${authUrl}/system-settings`, {
         credentials: 'include'
       });
 
@@ -150,8 +150,8 @@ export default {
 
     async createAccount() {
       try {
-        const { apiFetch } = useApi();
-        const response = await apiFetch('/origin-account/create', {
+        const { authApiFetch } = useAuthApi();
+        const response = await authApiFetch('/origin-account/create', {
           method: 'POST',
           body: JSON.stringify(this.newAccount)
         });
@@ -169,10 +169,10 @@ export default {
     },
     async fetchAccountList() {
       const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const authUrl = runtimeConfig.public.AUTH_URL;
 
       try {
-        const response = await fetch(`${backendUrl}/origin-account/list`, {
+        const response = await fetch(`${authUrl}/origin-account/list`, {
           credentials: 'include'
         });
         if (response.ok) {
@@ -203,8 +203,8 @@ export default {
       // If user confirms deletion
       if (result.isConfirmed) {
         try {
-          const { apiFetch } = useApi();
-          const response = await apiFetch('/origin-account/delete', {
+          const { authApiFetch } = useAuthApi();
+          const response = await authApiFetch('/origin-account/delete', {
             method: 'DELETE',
             body: JSON.stringify({ username: this.selectedAccount })
           });

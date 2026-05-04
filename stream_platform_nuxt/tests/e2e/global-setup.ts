@@ -4,6 +4,9 @@ const TEST_MODE = process.env.TEST_MODE || 'development';
 const API_BASE_URL = TEST_MODE === 'production-https'
   ? 'https://localtest.me/api'
   : 'http://localhost:8080';
+const AUTH_BASE_URL = TEST_MODE === 'production-https'
+  ? 'https://localtest.me/auth'
+  : 'http://localhost:8081';
 
 // Allow self-signed mkcert certificates in HTTPS mode
 if (TEST_MODE === 'production-https') {
@@ -31,7 +34,7 @@ export default async function globalSetup() {
       console.log(`🗑️  Deleting existing livestream: ${livestream.uuid}`);
 
       // Get CSRF token from /me endpoint
-      const meResponse = await fetch(`${API_BASE_URL}/me`, {
+      const meResponse = await fetch(`${AUTH_BASE_URL}/me`, {
         method: 'GET',
         headers: { 'Cookie': `token=${adminToken}` },
       });

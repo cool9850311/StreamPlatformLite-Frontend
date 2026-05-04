@@ -536,10 +536,11 @@ onMounted(async () => {
 
   const runtimeConfig = useRuntimeConfig();
   const backendUrl = runtimeConfig.public.BACKEND_URL;
+  const authUrl = runtimeConfig.public.AUTH_URL;
 
   // 第一步：检查用户登录状态
   try {
-    const meResponse = await axios.get(`${backendUrl}/me`, {
+    const meResponse = await axios.get(`${authUrl}/me`, {
       withCredentials: true
     });
 

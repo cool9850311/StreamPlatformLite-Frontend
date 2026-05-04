@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { JWTHelper } from '../helpers/jwt-helper'
 import { CsrfHelper } from '../helpers/csrf-helper'
-import { API_BASE, COOKIE_DOMAIN } from '../helpers/test-config'
+import { API_BASE, AUTH_BASE, COOKIE_DOMAIN } from '../helpers/test-config'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Group 1: Cookie Auth CSRF Enforcement
@@ -9,7 +9,7 @@ import { API_BASE, COOKIE_DOMAIN } from '../helpers/test-config'
 test.describe('CSRF Enforcement - Cookie Auth', () => {
   test('cookie auth without XSRF header returns 403', async ({ page }) => {
     const jwtHelper = new JWTHelper()
-    const response = await page.request.post(`${API_BASE}/origin-account/create`, {
+    const response = await page.request.post(`${AUTH_BASE}/origin-account/create`, {
       headers: {
         'Cookie': `token=${jwtHelper.generateAdminToken()}`,
         'Content-Type': 'application/json',
@@ -24,7 +24,7 @@ test.describe('CSRF Enforcement - Cookie Auth', () => {
 
   test('cookie auth with empty X-XSRF-TOKEN header returns 403', async ({ page }) => {
     const jwtHelper = new JWTHelper()
-    const response = await page.request.post(`${API_BASE}/origin-account/create`, {
+    const response = await page.request.post(`${AUTH_BASE}/origin-account/create`, {
       headers: {
         'Cookie': `token=${jwtHelper.generateAdminToken()}`,
         'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ test.describe('CSRF Enforcement - Cookie Auth', () => {
 
   test('cookie auth with malformed XSRF token returns 403', async ({ page }) => {
     const jwtHelper = new JWTHelper()
-    const response = await page.request.post(`${API_BASE}/origin-account/create`, {
+    const response = await page.request.post(`${AUTH_BASE}/origin-account/create`, {
       headers: {
         'Cookie': `token=${jwtHelper.generateAdminToken()}`,
         'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ test.describe('CSRF Enforcement - Cookie Auth', () => {
   test('cookie auth with token signed by wrong secret returns 403', async ({ page }) => {
     const jwtHelper = new JWTHelper()
     const wrongSecretHelper = new CsrfHelper('wrong-secret-key-000000000')
-    const response = await page.request.post(`${API_BASE}/origin-account/create`, {
+    const response = await page.request.post(`${AUTH_BASE}/origin-account/create`, {
       headers: {
         'Cookie': `token=${jwtHelper.generateAdminToken()}`,
         'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ test.describe('CSRF Enforcement - Cookie Auth', () => {
     const jwtHelper = new JWTHelper()
     const csrfHelper = new CsrfHelper()
     // Admin JWT, but CSRF token was generated for 'other-user'
-    const response = await page.request.post(`${API_BASE}/origin-account/create`, {
+    const response = await page.request.post(`${AUTH_BASE}/origin-account/create`, {
       headers: {
         'Cookie': `token=${jwtHelper.generateAdminToken()}`,
         'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ test.describe('CSRF Enforcement - Cookie Auth', () => {
   test('cookie auth with valid CSRF token does not return CSRF error', async ({ page }) => {
     const jwtHelper = new JWTHelper()
     const csrfHelper = new CsrfHelper()
-    const response = await page.request.post(`${API_BASE}/origin-account/create`, {
+    const response = await page.request.post(`${AUTH_BASE}/origin-account/create`, {
       headers: {
         'Cookie': `token=${jwtHelper.generateAdminToken()}`,
         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ test.describe('CSRF Enforcement - Cookie Auth', () => {
 test.describe('CSRF Exemption - GET Requests', () => {
   test('GET /me with cookie but no XSRF header returns 200', async ({ page }) => {
     const jwtHelper = new JWTHelper()
-    const response = await page.request.get(`${API_BASE}/me`, {
+    const response = await page.request.get(`${AUTH_BASE}/me`, {
       headers: {
         'Cookie': `token=${jwtHelper.generateAdminToken()}`,
       },
@@ -126,7 +126,7 @@ test.describe('CSRF Exemption - GET Requests', () => {
   })
 
   test('OPTIONS request is not blocked by CSRF', async ({ page }) => {
-    const response = await page.request.fetch(`${API_BASE}/me`, {
+    const response = await page.request.fetch(`${AUTH_BASE}/me`, {
       method: 'OPTIONS',
       failOnStatusCode: false,
     })
@@ -140,7 +140,7 @@ test.describe('CSRF Exemption - GET Requests', () => {
 test.describe('CSRF Exemption - Bearer Token Auth', () => {
   test('POST with Authorization Bearer header and no XSRF token is not a CSRF error', async ({ page }) => {
     const jwtHelper = new JWTHelper()
-    const response = await page.request.post(`${API_BASE}/origin-account/create`, {
+    const response = await page.request.post(`${AUTH_BASE}/origin-account/create`, {
       headers: {
         'Authorization': `Bearer ${jwtHelper.generateAdminToken()}`,
         'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ test.describe('CSRF Exemption - Bearer Token Auth', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 test.describe('CSRF Exemption - Unprotected Endpoints', () => {
   test('POST /origin-account/login without XSRF token is not a CSRF error', async ({ page }) => {
-    const response = await page.request.post(`${API_BASE}/origin-account/login`, {
+    const response = await page.request.post(`${AUTH_BASE}/origin-account/login`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -176,7 +176,7 @@ test.describe('CSRF Exemption - Unprotected Endpoints', () => {
   })
 
   test('POST /logout without XSRF token is not a CSRF error', async ({ page }) => {
-    const response = await page.request.post(`${API_BASE}/logout`, {
+    const response = await page.request.post(`${AUTH_BASE}/logout`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -196,7 +196,7 @@ test.describe('CSRF Exemption - Unprotected Endpoints', () => {
 test.describe('/me Response - csrf_token Field', () => {
   test('GET /me with cookie returns a non-empty csrf_token', async ({ page }) => {
     const jwtHelper = new JWTHelper()
-    const response = await page.request.get(`${API_BASE}/me`, {
+    const response = await page.request.get(`${AUTH_BASE}/me`, {
       headers: {
         'Cookie': `token=${jwtHelper.generateAdminToken()}`,
       },
@@ -210,7 +210,7 @@ test.describe('/me Response - csrf_token Field', () => {
 
   test('csrf_token matches expected format: 32-char hex nonce + dot + 64-char hex sig', async ({ page }) => {
     const jwtHelper = new JWTHelper()
-    const response = await page.request.get(`${API_BASE}/me`, {
+    const response = await page.request.get(`${AUTH_BASE}/me`, {
       headers: {
         'Cookie': `token=${jwtHelper.generateAdminToken()}`,
       },
@@ -223,10 +223,10 @@ test.describe('/me Response - csrf_token Field', () => {
     const jwtHelper = new JWTHelper()
     const headers = { 'Cookie': `token=${jwtHelper.generateAdminToken()}` }
 
-    const response1 = await page.request.get(`${API_BASE}/me`, { headers })
+    const response1 = await page.request.get(`${AUTH_BASE}/me`, { headers })
     const body1 = await response1.json()
 
-    const response2 = await page.request.get(`${API_BASE}/me`, { headers })
+    const response2 = await page.request.get(`${AUTH_BASE}/me`, { headers })
     const body2 = await response2.json()
 
     expect(body1.csrf_token).not.toBe(body2.csrf_token)

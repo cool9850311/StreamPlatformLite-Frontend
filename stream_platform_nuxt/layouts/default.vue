@@ -96,11 +96,11 @@ export default {
   },
   async mounted() {
     const runtimeConfig = useRuntimeConfig();
-    const backendUrl = runtimeConfig.public.BACKEND_URL;
+    const authUrl = runtimeConfig.public.AUTH_URL;
 
     // 检查登录状态（不强制重定向）
     try {
-      const meResponse = await axios.get(`${backendUrl}/me`, {
+      const meResponse = await axios.get(`${authUrl}/me`, {
         withCredentials: true
       });
 
@@ -120,11 +120,11 @@ export default {
   methods: {
     async logout() {
       const runtimeConfig = useRuntimeConfig();
-      const backendUrl = runtimeConfig.public.BACKEND_URL;
+      const authUrl = runtimeConfig.public.AUTH_URL;
 
       try {
         // Call backend logout API to clear HTTP-only cookie
-        await axios.post(`${backendUrl}/logout`, {}, {
+        await axios.post(`${authUrl}/logout`, {}, {
           withCredentials: true
         });
       } catch (error) {
